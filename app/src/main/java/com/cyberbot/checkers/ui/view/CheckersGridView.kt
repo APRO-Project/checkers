@@ -14,6 +14,10 @@ class CheckersGridView(
     context: Context,
     attrs: AttributeSet?
 ) : View(context, attrs) {
+    companion object{
+        val COLOR_DEFAULT_GRID =  Color.rgb(0.5F, 0.5F, 0.5F)
+    }
+
     private var gridColor1: Int = 0
         set(value) {
             field = value
@@ -89,7 +93,15 @@ class CheckersGridView(
     private var playerRadiusOutline: Float = 0F
 
     var playerSize: Float = 0.7F
+        set(value) {
+            field = value
+            invalidate()
+        }
     var playerOutlineSize: Float = 0.8F
+        set(value) {
+            field = value
+            invalidate()
+        }
     var gridData = Grid(8, 3)
 
     init {
@@ -99,14 +111,14 @@ class CheckersGridView(
             0, 0
         ).apply {
             try {
-                gridColor1 = getColor(R.styleable.CheckersGridView_grid_color1, Color.WHITE)
-                gridColor2 = getColor(R.styleable.CheckersGridView_grid_color2, Color.BLACK)
-                playerColor1 = getColor(R.styleable.CheckersGridView_player_color1, Color.RED)
-                playerColor2 = getColor(R.styleable.CheckersGridView_player_color2, Color.BLUE)
+                gridColor1 = getColor(R.styleable.CheckersGridView_grid_color1, COLOR_DEFAULT_GRID)
+                gridColor2 = getColor(R.styleable.CheckersGridView_grid_color2, Color.WHITE)
+                playerColor1 = getColor(R.styleable.CheckersGridView_player_color1, Color.WHITE)
+                playerColor2 = getColor(R.styleable.CheckersGridView_player_color2, Color.BLACK)
                 playerOutlineColor1 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.BLUE)
+                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.BLACK)
                 playerOutlineColor2 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.RED)
+                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.WHITE)
             } finally {
                 recycle()
             }

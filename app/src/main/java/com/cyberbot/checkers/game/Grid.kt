@@ -2,7 +2,7 @@ package com.cyberbot.checkers.game
 
 import kotlin.math.pow
 
-class Grid(val size: Int = 8, val playerRows: Int = 3) : Iterable<GridEntry> {
+class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEntry> {
     private val gridEntries: Array<GridEntry>
 
     init {
