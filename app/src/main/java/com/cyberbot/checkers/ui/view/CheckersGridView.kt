@@ -1,12 +1,15 @@
 package com.cyberbot.checkers.ui.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
+import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
 
 
@@ -14,10 +17,11 @@ class CheckersGridView(
     context: Context,
     attrs: AttributeSet?
 ) : View(context, attrs) {
-    companion object{
-        val COLOR_DEFAULT_GRID =  Color.rgb(0.5F, 0.5F, 0.5F)
+    companion object {
+        val COLOR_DEFAULT_GRID = Color.rgb(0.5F, 0.5F, 0.5F)
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Colors and paint">
     private var gridColor1: Int = 0
         set(value) {
             field = value
@@ -87,6 +91,7 @@ class CheckersGridView(
         color = playerOutlineColor2
         style = Paint.Style.FILL
     }
+    //</editor-fold>
 
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
@@ -102,7 +107,14 @@ class CheckersGridView(
             field = value
             invalidate()
         }
+
     var gridData = Grid(8, 3)
+
+    var movingEntry: GridEntry? = null
+    var moveOffsetX: Float = 0F
+    var moveOffsetY: Float = 0F
+    var moveX = -1F
+    var moveY = -1F
 
     init {
         context.theme.obtainStyledAttributes(
@@ -125,6 +137,24 @@ class CheckersGridView(
         }
     }
 
+    private fun drawPlayer(canvas: Canvas, entry: GridEntry, cx: Float, cy: Float) {
+        canvas.apply {
+            when (entry.player) {
+                PlayerNum.FIRST -> {
+                    drawCircle(cx, cy, playerRadiusOutline, paintPlayerOutlineColor1)
+                    drawCircle(cx, cy, playerRadius, paintPlayerColor1)
+                }
+                PlayerNum.SECOND -> {
+                    drawCircle(cx, cy, playerRadiusOutline, paintPlayerOutlineColor2)
+                    drawCircle(cx, cy, playerRadius, paintPlayerColor2)
+                }
+                PlayerNum.NOPLAYER -> {
+                    // Do not draw
+                }
+            }
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -141,24 +171,65 @@ class CheckersGridView(
                     if (it.legal()) paintGridColor1 else paintGridColor2
                 )
 
-                val circleX = left + singleCellSize / 2
-                val circleY = top + singleCellSize / 2
-
-                when (it.player) {
-                    PlayerNum.FIRST -> {
-                        drawCircle(circleX, circleY, playerRadiusOutline, paintPlayerOutlineColor1)
-                        drawCircle(circleX, circleY, playerRadius, paintPlayerColor1)
-                    }
-                    PlayerNum.SECOND -> {
-                        drawCircle(circleX, circleY, playerRadiusOutline, paintPlayerOutlineColor2)
-                        drawCircle(circleX, circleY, playerRadius, paintPlayerColor2)
-                    }
-                    PlayerNum.NOPLAYER -> {
-                        // Do not draw
-                    }
+                if (it != movingEntry) {
+                    val cx = (it.x + 0.5F) * singleCellSize
+                    val cy = (it.y + 0.5F) * singleCellSize
+                    drawPlayer(this, it, cx, cy)
                 }
             }
+
+           movingEntry?.let {
+               drawPlayer(this, it, moveX - moveOffsetX, moveY - moveOffsetY)
+           }
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event ?: return super.onTouchEvent(event)
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val x = event.x / singleCellSize
+                val y = event.y / singleCellSize
+
+                val entry = gridData.getEntryByCoords(x.toInt(), y.toInt())
+                if (entry.player == PlayerNum.NOPLAYER) {
+                    return true
+                }
+
+                val cx = (entry.x + 0.5F) * singleCellSize
+                val cy = (entry.y + 0.5F) * singleCellSize
+
+                movingEntry = entry
+
+                moveOffsetX = event.x - cx
+                moveOffsetY = event.y - cy
+                moveX = event.x
+                moveY = event.y
+
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                moveX = event.x
+                moveY = event.y
+
+                invalidate()
+
+                Log.d(this.javaClass.simpleName, "Moving ($moveX, $moveY)")
+
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                moveOffsetX = 0F
+                moveOffsetY = 0F
+                movingEntry = null
+
+                return true
+            }
+        }
+
+        return false
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

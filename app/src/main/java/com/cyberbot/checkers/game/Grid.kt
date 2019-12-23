@@ -1,5 +1,6 @@
 package com.cyberbot.checkers.game
 
+import java.lang.RuntimeException
 import kotlin.math.pow
 
 class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEntry> {
@@ -18,6 +19,21 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
 
             return@Array entry
         }
+    }
+
+    @Throws(IndexOutOfBoundsException::class)
+    fun getEntryByCoords(x: Int, y: Int) : GridEntry{
+        if(x >= size || y >= size) {
+            throw IndexOutOfBoundsException("Coordinates ($x, $y) out of bounds for grid with size $size")
+        }
+
+
+        forEach {
+            if(it.x == x && it.y == y)
+                return it
+        }
+
+        throw RuntimeException("Entry ($x, $y) not found in Grid")
     }
 
     override fun iterator(): Iterator<GridEntry> {
