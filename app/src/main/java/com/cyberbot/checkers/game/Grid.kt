@@ -22,18 +22,32 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
     }
 
     @Throws(IndexOutOfBoundsException::class)
-    fun getEntryByCoords(x: Int, y: Int) : GridEntry{
-        if(x >= size || y >= size) {
+    fun getEntryByCoords(x: Int, y: Int): GridEntry {
+        if (x >= size || y >= size) {
             throw IndexOutOfBoundsException("Coordinates ($x, $y) out of bounds for grid with size $size")
         }
 
 
         forEach {
-            if(it.x == x && it.y == y)
+            if (it.x == x && it.y == y)
                 return it
         }
 
         throw RuntimeException("Entry ($x, $y) not found in Grid")
+    }
+
+    fun moveAllowed(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
+        // TODO: Do proper checks for allowing a move
+        return srcEntry == dstEntry || (dstEntry.player == PlayerNum.NOPLAYER && dstEntry.legal())
+    }
+
+    fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
+        if(! moveAllowed(srcEntry, dstEntry)) {
+            return false
+        }
+
+        //TODO: Execute the move
+        return true
     }
 
     override fun iterator(): Iterator<GridEntry> {

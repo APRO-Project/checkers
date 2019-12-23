@@ -1,8 +1,14 @@
 package com.cyberbot.checkers.ui.view
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -11,6 +17,7 @@ import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
+import java.util.logging.Logger
 
 
 class CheckersGridView(
@@ -19,19 +26,33 @@ class CheckersGridView(
 ) : View(context, attrs) {
     companion object {
         val COLOR_DEFAULT_GRID = Color.rgb(0.5F, 0.5F, 0.5F)
+        val COLOR_DEFAULT_DROP_ALLOWED = Color.rgb(118, 230, 62)
+        val COLOR_DEFAULT_DROP_FORBIDDEN = Color.rgb(230, 62, 62)
     }
 
     // <editor-fold defaultstate="collapsed" desc="Colors and paint">
-    private var gridColor1: Int = 0
+    private var gridColorMoveAllowed: Int = 0
         set(value) {
             field = value
-            paintGridColor1.color = value
+            paintGridColorMoveAllowed.color = value
             invalidate()
         }
-    private var gridColor2: Int = 0
+    private var gridColorMoveForbidden: Int = 0
         set(value) {
             field = value
-            paintGridColor2.color = value
+            paintGridColorMoveForbidden.color = value
+            invalidate()
+        }
+    private var gridColorLegal: Int = 0
+        set(value) {
+            field = value
+            paintGridColorLegal.color = value
+            invalidate()
+        }
+    private var girdColorIllegal: Int = 0
+        set(value) {
+            field = value
+            paintGridColorIllegal.color = value
             invalidate()
         }
 
@@ -61,13 +82,23 @@ class CheckersGridView(
             invalidate()
         }
 
-    private val paintGridColor1 = Paint(0).apply {
-        color = gridColor1
+    private val paintGridColorMoveAllowed = Paint(0).apply {
+        color = gridColorMoveAllowed
         style = Paint.Style.FILL
     }
 
-    private val paintGridColor2 = Paint(0).apply {
-        color = gridColor2
+    private val paintGridColorMoveForbidden = Paint(0).apply {
+        color = gridColorMoveForbidden
+        style = Paint.Style.FILL
+    }
+
+    private val paintGridColorLegal = Paint(0).apply {
+        color = gridColorLegal
+        style = Paint.Style.FILL
+    }
+
+    private val paintGridColorIllegal = Paint(0).apply {
+        color = girdColorIllegal
         style = Paint.Style.FILL
     }
 
@@ -97,12 +128,15 @@ class CheckersGridView(
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
 
-    var playerSize: Float = 0.7F
+    var riseAnimationDuration = 500L
+    var returnAnimationDuration = 500L
+    var playerScaleMoving: Float = 1.35F
+    var playerSize: Float = 0.6F
         set(value) {
             field = value
             invalidate()
         }
-    var playerOutlineSize: Float = 0.8F
+    var playerOutlineSize: Float = 0.7F
         set(value) {
             field = value
             invalidate()
@@ -110,11 +144,14 @@ class CheckersGridView(
 
     var gridData = Grid(8, 3)
 
+    var userIntercating = false
+    var playerScaleCurrent = 1F
     var movingEntry: GridEntry? = null
     var moveOffsetX: Float = 0F
     var moveOffsetY: Float = 0F
-    var moveX = -1F
-    var moveY = -1F
+    var moveX = 0F
+    var moveY = 0F
+    var returnAnimatorSet: AnimatorSet? = null
 
     init {
         context.theme.obtainStyledAttributes(
@@ -123,8 +160,20 @@ class CheckersGridView(
             0, 0
         ).apply {
             try {
-                gridColor1 = getColor(R.styleable.CheckersGridView_grid_color1, COLOR_DEFAULT_GRID)
-                gridColor2 = getColor(R.styleable.CheckersGridView_grid_color2, Color.WHITE)
+                gridColorMoveAllowed =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_legal,
+                        COLOR_DEFAULT_DROP_ALLOWED
+                    )
+                gridColorMoveForbidden =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_legal,
+                        COLOR_DEFAULT_DROP_FORBIDDEN
+                    )
+                gridColorLegal =
+                    getColor(R.styleable.CheckersGridView_grid_color_legal, COLOR_DEFAULT_GRID)
+                girdColorIllegal =
+                    getColor(R.styleable.CheckersGridView_grid_color_illegal, Color.WHITE)
                 playerColor1 = getColor(R.styleable.CheckersGridView_player_color1, Color.WHITE)
                 playerColor2 = getColor(R.styleable.CheckersGridView_player_color2, Color.BLACK)
                 playerOutlineColor1 =
@@ -137,16 +186,38 @@ class CheckersGridView(
         }
     }
 
-    private fun drawPlayer(canvas: Canvas, entry: GridEntry, cx: Float, cy: Float) {
+    private fun drawGridEntry(
+        canvas: Canvas, entry: GridEntry,
+        paint: Paint = if (entry.legal()) paintGridColorLegal else paintGridColorIllegal
+    ) {
+        val left = entry.x * singleCellSize
+        val top = entry.y * singleCellSize
+
+        canvas.drawRect(
+            left,
+            top,
+            left + singleCellSize,
+            top + singleCellSize,
+            paint
+        )
+    }
+
+    private fun drawPlayer(
+        canvas: Canvas,
+        entry: GridEntry,
+        cx: Float,
+        cy: Float,
+        scale: Float = 1F
+    ) {
         canvas.apply {
             when (entry.player) {
                 PlayerNum.FIRST -> {
-                    drawCircle(cx, cy, playerRadiusOutline, paintPlayerOutlineColor1)
-                    drawCircle(cx, cy, playerRadius, paintPlayerColor1)
+                    drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor1)
+                    drawCircle(cx, cy, playerRadius * scale, paintPlayerColor1)
                 }
                 PlayerNum.SECOND -> {
-                    drawCircle(cx, cy, playerRadiusOutline, paintPlayerOutlineColor2)
-                    drawCircle(cx, cy, playerRadius, paintPlayerColor2)
+                    drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor2)
+                    drawCircle(cx, cy, playerRadius * scale, paintPlayerColor2)
                 }
                 PlayerNum.NOPLAYER -> {
                     // Do not draw
@@ -160,16 +231,7 @@ class CheckersGridView(
 
         canvas.apply {
             gridData.forEach {
-                val left = it.x * singleCellSize
-                val top = it.y * singleCellSize
-
-                drawRect(
-                    left,
-                    top,
-                    left + singleCellSize,
-                    top + singleCellSize,
-                    if (it.legal()) paintGridColor1 else paintGridColor2
-                )
+                drawGridEntry(this, it)
 
                 if (it != movingEntry) {
                     val cx = (it.x + 0.5F) * singleCellSize
@@ -178,9 +240,21 @@ class CheckersGridView(
                 }
             }
 
-           movingEntry?.let {
-               drawPlayer(this, it, moveX - moveOffsetX, moveY - moveOffsetY)
-           }
+            movingEntry?.let { entry ->
+                val x = (moveX / singleCellSize).toInt()
+                val y = (moveY / singleCellSize).toInt()
+                val dstEntry = gridData.getEntryByCoords(x, y)
+
+                if (userIntercating) {
+                    drawGridEntry(
+                        this, dstEntry,
+                        if (gridData.moveAllowed(entry, dstEntry))
+                            paintGridColorMoveAllowed else paintGridColorMoveForbidden
+                    )
+                }
+
+                drawPlayer(this, entry, moveX, moveY, playerScaleCurrent)
+            }
         }
     }
 
@@ -190,10 +264,14 @@ class CheckersGridView(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                val x = event.x / singleCellSize
-                val y = event.y / singleCellSize
+                userIntercating = true
+                returnAnimatorSet?.cancel()
+                returnAnimatorSet = null
 
-                val entry = gridData.getEntryByCoords(x.toInt(), y.toInt())
+                val x = (event.x / singleCellSize).toInt()
+                val y = (event.y / singleCellSize).toInt()
+
+                val entry = gridData.getEntryByCoords(x, y)
                 if (entry.player == PlayerNum.NOPLAYER) {
                     return true
                 }
@@ -201,29 +279,88 @@ class CheckersGridView(
                 val cx = (entry.x + 0.5F) * singleCellSize
                 val cy = (entry.y + 0.5F) * singleCellSize
 
-                movingEntry = entry
-
                 moveOffsetX = event.x - cx
                 moveOffsetY = event.y - cy
-                moveX = event.x
-                moveY = event.y
+                moveX = cx
+                moveY = cy
+
+                if (movingEntry == null) {
+                    ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
+                        addUpdateListener {
+                            playerScaleCurrent = it.animatedValue as Float
+                        }
+
+                        duration = riseAnimationDuration
+                        start()
+                    }
+                }
+
+                movingEntry = entry
 
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                moveX = event.x
-                moveY = event.y
+                userIntercating = true
+                moveX = event.x - moveOffsetX
+                moveY = event.y - moveOffsetY
 
                 invalidate()
-
-                Log.d(this.javaClass.simpleName, "Moving ($moveX, $moveY)")
 
                 return true
             }
             MotionEvent.ACTION_UP -> {
+                userIntercating = false
+                Log.d("GridMotionEvent", "Registered ACTION_UP")
+                val x = (moveX / singleCellSize).toInt()
+                val y = (moveY / singleCellSize).toInt()
+                val dstEntry = gridData.getEntryByCoords(x, y)
+
+                movingEntry?.let {
+                    gridData.attemptMove(it, dstEntry)
+                }
+
                 moveOffsetX = 0F
                 moveOffsetY = 0F
-                movingEntry = null
+
+                movingEntry?.let { entry ->
+                    val dstX = ((entry.x) + 0.5F) * singleCellSize
+                    val dstY = ((entry.y) + 0.5F) * singleCellSize
+
+                    val srcX = moveX
+                    val srcY = moveY
+
+                    returnAnimatorSet = AnimatorSet().apply {
+                        playTogether(
+                            ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
+                                addUpdateListener {
+                                    playerScaleCurrent = it.animatedValue as Float
+                                    invalidate()
+                                }
+                            },
+                            ValueAnimator.ofFloat(srcX, dstX).apply {
+                                addUpdateListener {
+                                    moveX = it.animatedValue as Float
+                                }
+                            },
+
+                            ValueAnimator.ofFloat(srcY, dstY).apply {
+                                addUpdateListener {
+                                    moveY = it.animatedValue as Float
+                                }
+                            })
+
+                        addListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                movingEntry = null
+                                moveY = 0F
+                                moveX = 0F
+                            }
+                        })
+
+                        duration = returnAnimationDuration
+                        start()
+                    }
+                }
 
                 return true
             }

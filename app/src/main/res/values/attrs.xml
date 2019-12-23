@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="CheckersGridView">
-        <attr name="grid_size" format="integer"/>
-        <attr name="grid_color1" format="color" />
-        <attr name="grid_color2" format="color" />
+        <attr name="grid_color_legal" format="color" />
+        <attr name="grid_color_illegal" format="color" />
         <attr name="player_color1" format="color" />
         <attr name="player_color2" format="color" />
         <attr name="player_outline_color1" format="color" />
