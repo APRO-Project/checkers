@@ -319,7 +319,9 @@ class CheckersGridView(
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 movingEntry?.let {
-                    gridData.attemptMove(it, dstEntry)
+                    if(gridData.attemptMove(it, dstEntry)) {
+                        invalidate()
+                    }
                 }
 
                 moveOffsetX = 0F

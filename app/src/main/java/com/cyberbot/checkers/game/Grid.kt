@@ -43,9 +43,14 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
-        if (!moveAllowed(srcEntry, dstEntry)) {
+        if (dstEntry == srcEntry || !moveAllowed(srcEntry, dstEntry)) {
             return false
         }
+
+        val dstIndex = gridEntries.indexOf(dstEntry)
+        val srcIndex = gridEntries.indexOf(srcEntry)
+        gridEntries[dstIndex].player = srcEntry.player
+        gridEntries[srcIndex].player = PlayerNum.NOPLAYER
 
         return true
     }
