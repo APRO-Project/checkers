@@ -31,51 +31,51 @@ class CheckersGridView(
     }
 
     // <editor-fold defaultstate="collapsed" desc="Colors and paint">
-    private var gridColorMoveAllowed: Int = 0
+    var gridColorMoveAllowed: Int = 0
         set(value) {
             field = value
             paintGridColorMoveAllowed.color = value
             invalidate()
         }
-    private var gridColorMoveForbidden: Int = 0
+    var gridColorMoveForbidden: Int = 0
         set(value) {
             field = value
             paintGridColorMoveForbidden.color = value
             invalidate()
         }
-    private var gridColorLegal: Int = 0
+    var gridColorLegal: Int = 0
         set(value) {
             field = value
             paintGridColorLegal.color = value
             invalidate()
         }
-    private var girdColorIllegal: Int = 0
+    var girdColorIllegal: Int = 0
         set(value) {
             field = value
             paintGridColorIllegal.color = value
             invalidate()
         }
 
-    private var playerColor1: Int = 0
+    var playerColor1: Int = 0
         set(value) {
             field = value
             paintPlayerColor1.color = value
             invalidate()
         }
-    private var playerColor2: Int = 0
+    var playerColor2: Int = 0
         set(value) {
             field = value
             paintPlayerColor2.color = value
             invalidate()
         }
 
-    private var playerOutlineColor1: Int = 0
+    var playerOutlineColor1: Int = 0
         set(value) {
             field = value
             paintPlayerOutlineColor1.color = value
             invalidate()
         }
-    private var playerOutlineColor2: Int = 0
+    var playerOutlineColor2: Int = 0
         set(value) {
             field = value
             paintPlayerOutlineColor2.color = value
@@ -142,16 +142,16 @@ class CheckersGridView(
             invalidate()
         }
 
-    var gridData = Grid(8, 3)
+    private var gridData = Grid(8, 3)
 
-    var userIntercating = false
-    var playerScaleCurrent = 1F
-    var movingEntry: GridEntry? = null
-    var moveOffsetX: Float = 0F
-    var moveOffsetY: Float = 0F
-    var moveX = 0F
-    var moveY = 0F
-    var returnAnimatorSet: AnimatorSet? = null
+    private var userIntercating = false
+    private var playerScaleCurrent = 1F
+    private var movingEntry: GridEntry? = null
+    private var moveOffsetX: Float = 0F
+    private var moveOffsetY: Float = 0F
+    private var moveX = 0F
+    private var moveY = 0F
+    private var returnAnimatorSet: AnimatorSet? = null
 
     init {
         context.theme.obtainStyledAttributes(
