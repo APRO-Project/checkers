@@ -142,7 +142,11 @@ class CheckersGridView(
             invalidate()
         }
 
-    private var gridData = Grid(8, 3)
+    var gridData = Grid(8, 3)
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     private var userIntercating = false
     private var playerScaleCurrent = 1F
