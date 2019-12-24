@@ -29,8 +29,9 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
 
 
         forEach {
-            if (it.x == x && it.y == y)
+            if (it.x == x && it.y == y) {
                 return it
+            }
         }
 
         throw RuntimeException("Entry ($x, $y) not found in Grid")
@@ -42,11 +43,10 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
-        if(! moveAllowed(srcEntry, dstEntry)) {
+        if (!moveAllowed(srcEntry, dstEntry)) {
             return false
         }
 
-        //TODO: Execute the move
         return true
     }
 

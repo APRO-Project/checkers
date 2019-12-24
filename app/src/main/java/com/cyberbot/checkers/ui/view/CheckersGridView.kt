@@ -17,7 +17,6 @@ import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
-import java.util.logging.Logger
 
 
 class CheckersGridView(
@@ -148,7 +147,7 @@ class CheckersGridView(
             invalidate()
         }
 
-    private var userIntercating = false
+    private var userInteracting = false
     private var playerScaleCurrent = 1F
     private var movingEntry: GridEntry? = null
     private var moveOffsetX: Float = 0F
@@ -249,7 +248,7 @@ class CheckersGridView(
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
-                if (userIntercating) {
+                if (userInteracting) {
                     drawGridEntry(
                         this, dstEntry,
                         if (gridData.moveAllowed(entry, dstEntry))
@@ -268,7 +267,7 @@ class CheckersGridView(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                userIntercating = true
+                userInteracting = true
                 returnAnimatorSet?.cancel()
                 returnAnimatorSet = null
 
@@ -304,7 +303,7 @@ class CheckersGridView(
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                userIntercating = true
+                userInteracting = true
                 moveX = event.x - moveOffsetX
                 moveY = event.y - moveOffsetY
 
@@ -313,7 +312,7 @@ class CheckersGridView(
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                userIntercating = false
+                userInteracting = false
                 Log.d("GridMotionEvent", "Registered ACTION_UP")
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
