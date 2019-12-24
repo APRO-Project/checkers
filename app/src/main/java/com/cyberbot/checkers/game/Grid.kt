@@ -8,6 +8,7 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
 
     var allowFirstPlayerMove = true
     var allowSecondPlayerMove = false
+    var gridUpdateListener: GridUpdateListener? = null
 
     init {
         gridEntries = Array(size.toDouble().pow(2).toInt()) {
@@ -59,8 +60,14 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
             return false
         }
 
+        gridUpdateListener?.move(this, srcEntry, dstEntry)
+
         val dstIndex = gridEntries.indexOf(dstEntry)
         val srcIndex = gridEntries.indexOf(srcEntry)
+        if(srcIndex == -1 || dstIndex == -1) {
+            throw RuntimeException("GridEntry destination or source not part of the Grid")
+        }
+
         gridEntries[dstIndex].player = srcEntry.player
         gridEntries[srcIndex].player = PlayerNum.NOPLAYER
 
@@ -70,4 +77,8 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
     override fun iterator(): Iterator<GridEntry> {
         return gridEntries.iterator()
     }
+}
+
+interface GridUpdateListener {
+    fun move(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 }
