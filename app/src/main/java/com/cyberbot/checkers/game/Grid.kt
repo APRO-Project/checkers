@@ -6,6 +6,9 @@ import kotlin.math.pow
 class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEntry> {
     private val gridEntries: Array<GridEntry>
 
+    var allowFirstPlayerMove = true
+    var allowSecondPlayerMove = false
+
     init {
         gridEntries = Array(size.toDouble().pow(2).toInt()) {
             val y = it / size
@@ -39,7 +42,16 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
 
     fun moveAllowed(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
         // TODO: Do proper checks for allowing a move
-        return srcEntry == dstEntry || (dstEntry.player == PlayerNum.NOPLAYER && dstEntry.legal())
+        return srcEntry == dstEntry || (dstEntry.player == PlayerNum.NOPLAYER &&
+                dstEntry.legal() && playerMoveAllowed(srcEntry.player))
+    }
+
+    fun playerMoveAllowed(player: PlayerNum): Boolean {
+        return when (player) {
+            PlayerNum.NOPLAYER -> false
+            PlayerNum.FIRST -> allowFirstPlayerMove
+            PlayerNum.SECOND -> allowSecondPlayerMove
+        }
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {

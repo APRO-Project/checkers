@@ -275,7 +275,7 @@ class CheckersGridView(
                 val y = (event.y / singleCellSize).toInt()
 
                 val entry = gridData.getEntryByCoords(x, y)
-                if (entry.player == PlayerNum.NOPLAYER) {
+                if (!gridData.playerMoveAllowed(entry.player)) {
                     return true
                 }
 
@@ -313,21 +313,20 @@ class CheckersGridView(
             }
             MotionEvent.ACTION_UP -> {
                 userInteracting = false
-                Log.d("GridMotionEvent", "Registered ACTION_UP")
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
-                movingEntry?.let {
-                    if(gridData.attemptMove(it, dstEntry)) {
-                        invalidate()
-                    }
-                }
-
                 moveOffsetX = 0F
                 moveOffsetY = 0F
 
-                movingEntry?.let { entry ->
+                movingEntry?.let {
+                    if(gridData.attemptMove(it, dstEntry)) {
+                        movingEntry = dstEntry
+                    }
+                }
+
+                movingEntry?.let {entry ->
                     val dstX = ((entry.x) + 0.5F) * singleCellSize
                     val dstY = ((entry.y) + 0.5F) * singleCellSize
 
