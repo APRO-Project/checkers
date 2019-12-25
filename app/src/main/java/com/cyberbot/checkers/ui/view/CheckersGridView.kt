@@ -154,8 +154,8 @@ class CheckersGridView(
     private var userInteracting = false
     private var playerScaleCurrent = 1F
     private var movingEntry: GridEntry? = null
-    private var moveOffsetX: Float = 0F
-    private var moveOffsetY: Float = 0F
+    private var moveOffsetX = 0F
+    private var moveOffsetY = 0F
     private var moveX = 0F
     private var moveY = 0F
     private var returnAnimatorSet: AnimatorSet? = null
