@@ -278,8 +278,10 @@ class CheckersGridView(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 userInteracting = true
-                returnAnimatorSet?.cancel()
-                returnAnimatorSet = null
+                returnAnimatorSet?.let {
+                    it.cancel()
+                    returnAnimatorSet = null
+                }
 
                 val x = (event.x / singleCellSize).toInt()
                 val y = (event.y / singleCellSize).toInt()
