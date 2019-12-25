@@ -301,6 +301,7 @@ class CheckersGridView(
                     ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
                         addUpdateListener {
                             playerScaleCurrent = it.animatedValue as Float
+                            invalidate()
                         }
 
                         duration = riseAnimationDuration
