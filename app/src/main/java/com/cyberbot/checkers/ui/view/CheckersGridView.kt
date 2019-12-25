@@ -371,6 +371,7 @@ class CheckersGridView(
                                 movingEntry = null
                                 moveY = 0F
                                 moveX = 0F
+                                returnAnimatorSet = null
                                 invalidate()
                             }
                         })
