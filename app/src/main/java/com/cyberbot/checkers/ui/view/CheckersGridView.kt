@@ -17,6 +17,8 @@ import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
+import java.lang.Float.max
+import java.lang.Float.min
 
 
 class CheckersGridView(
@@ -123,6 +125,7 @@ class CheckersGridView(
     }
     //</editor-fold>
 
+    private var viewSize: Int = 0
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
@@ -144,6 +147,7 @@ class CheckersGridView(
     var gridData = Grid(8, 3)
         set(value) {
             field = value
+            singleCellSize = viewSize.toFloat() / value.size
             invalidate()
         }
 
@@ -254,6 +258,12 @@ class CheckersGridView(
                         if (gridData.moveAllowed(entry, dstEntry))
                             paintGridColorMoveAllowed else paintGridColorMoveForbidden
                     )
+
+                    val cx = (dstEntry.x + 0.5F) * singleCellSize
+                    val cy = (dstEntry.y + 0.5F) * singleCellSize
+                    if (dstEntry != entry) {
+                        drawPlayer(this, dstEntry, cx, cy)
+                    }
                 }
 
                 drawPlayer(this, entry, moveX, moveY, playerScaleCurrent)
@@ -304,8 +314,8 @@ class CheckersGridView(
             }
             MotionEvent.ACTION_MOVE -> {
                 userInteracting = true
-                moveX = event.x - moveOffsetX
-                moveY = event.y - moveOffsetY
+                moveX = max(min(event.x - moveOffsetX, viewSize.toFloat() - 1), 0F)
+                moveY = max(min(event.y - moveOffsetY, viewSize.toFloat() - 1), 0F)
 
                 invalidate()
 
@@ -321,12 +331,12 @@ class CheckersGridView(
                 moveOffsetY = 0F
 
                 movingEntry?.let {
-                    if(gridData.attemptMove(it, dstEntry)) {
+                    if (gridData.attemptMove(it, dstEntry)) {
                         movingEntry = dstEntry
                     }
                 }
 
-                movingEntry?.let {entry ->
+                movingEntry?.let { entry ->
                     val dstX = ((entry.x) + 0.5F) * singleCellSize
                     val dstY = ((entry.y) + 0.5F) * singleCellSize
 
@@ -358,6 +368,7 @@ class CheckersGridView(
                                 movingEntry = null
                                 moveY = 0F
                                 moveX = 0F
+                                invalidate()
                             }
                         })
 
@@ -374,7 +385,12 @@ class CheckersGridView(
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        singleCellSize = w.toFloat() / gridData.size
+        if (w == 0 || h == 0) {
+            return
+        }
+
+        viewSize = w
+        singleCellSize = viewSize.toFloat() / gridData.size
         playerRadius = singleCellSize * playerSize * 0.5F
         playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
 
