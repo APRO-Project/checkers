@@ -19,10 +19,17 @@ class GameActivity : AppCompatActivity() {
 
         checkersGridView.moveUpdateListener = object : MoveUpdateListener {
             override fun onMoveStart(srcEntry: GridEntry, dstEntry: GridEntry) {
-
+                if(srcEntry.player == PlayerNum.FIRST) {
+                    checkersGridView.userInteractionEnabled = false
+                    move_player2.text = "Busy"
+                }
             }
 
             override fun onMoveEnd(srcEntry: GridEntry, dstEntry: GridEntry) {
+                if(srcEntry.player == PlayerNum.FIRST) {
+                    checkersGridView.userInteractionEnabled = true
+                    move_player2.text = getString(R.string.game_player_turn_info)
+                }
                 if (srcEntry == dstEntry) return
 
                 gridData.attemptMove(srcEntry, dstEntry)

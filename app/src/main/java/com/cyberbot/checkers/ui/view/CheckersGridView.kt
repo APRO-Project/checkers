@@ -130,8 +130,9 @@ class CheckersGridView(
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
 
-    var allowFirstPlayerMove: Boolean = false
-    var allowSecondPlayerMove: Boolean = true
+    var allowFirstPlayerMove = false
+    var allowSecondPlayerMove = true
+    var userInteractionEnabled = true
 
     var moveUpdateListener: MoveUpdateListener? = null
 
@@ -360,6 +361,10 @@ class CheckersGridView(
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return super.onTouchEvent(event)
+
+        if (!userInteractionEnabled) {
+            return false
+        }
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
