@@ -6,8 +6,6 @@ import kotlin.math.pow
 class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEntry> {
     private val gridEntries: Array<GridEntry>
 
-    var allowFirstPlayerMove = true
-    var allowSecondPlayerMove = false
     var gridUpdateListener: GridUpdateListener? = null
 
     init {
@@ -43,16 +41,7 @@ class Grid(val size: Int = 8, private val playerRows: Int = 3) : Iterable<GridEn
 
     fun moveAllowed(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
         // TODO: Do proper checks for allowing a move
-        return srcEntry == dstEntry || (dstEntry.player == PlayerNum.NOPLAYER &&
-                dstEntry.legal() && playerMoveAllowed(srcEntry.player))
-    }
-
-    fun playerMoveAllowed(player: PlayerNum): Boolean {
-        return when (player) {
-            PlayerNum.NOPLAYER -> false
-            PlayerNum.FIRST -> allowFirstPlayerMove
-            PlayerNum.SECOND -> allowSecondPlayerMove
-        }
+        return srcEntry == dstEntry || (dstEntry.player == PlayerNum.NOPLAYER && dstEntry.legal())
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {

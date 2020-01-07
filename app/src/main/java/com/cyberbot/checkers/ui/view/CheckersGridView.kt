@@ -130,7 +130,13 @@ class CheckersGridView(
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
 
+    var allowFirstPlayerMove: Boolean = false
+    var allowSecondPlayerMove: Boolean = true
+
+    var moveUpdateListener: MoveUpdateListener? = null
+
     var riseAnimationDuration = 500L
+    var artificialAnimationDuration = 500L
     var returnAnimationDuration = 500L
     var playerScaleMoving: Float = 1.35F
     var playerSize: Float = 0.6F
@@ -233,6 +239,86 @@ class CheckersGridView(
         }
     }
 
+    fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
+        if (!gridData.moveAllowed(srcEntry, dstEntry)) {
+            return false
+        }
+
+        val srcX = ((srcEntry.x) + 0.5F) * singleCellSize
+        val srcY = ((srcEntry.y) + 0.5F) * singleCellSize
+
+        val dstX = ((dstEntry.x) + 0.5F) * singleCellSize
+        val dstY = ((dstEntry.y) + 0.5F) * singleCellSize
+
+        moveX = srcX
+        moveY = srcY
+
+        movingEntry = srcEntry
+
+        AnimatorSet().apply {
+            playSequentially(
+                ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
+                    addUpdateListener {
+                        playerScaleCurrent = it.animatedValue as Float
+                        invalidate()
+                    }
+
+                    duration = artificialAnimationDuration
+                },
+                AnimatorSet().apply {
+                    playTogether(ValueAnimator.ofFloat(srcX, dstX).apply {
+                        addUpdateListener {
+                            moveX = it.animatedValue as Float
+                            invalidate()
+                        }
+                    }, ValueAnimator.ofFloat(srcY, dstY).apply {
+                        addUpdateListener {
+                            moveY = it.animatedValue as Float
+                            invalidate()
+                        }
+                    })
+
+                    duration = artificialAnimationDuration
+                },
+                ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
+                    addUpdateListener {
+                        playerScaleCurrent = it.animatedValue as Float
+                        invalidate()
+                    }
+
+                    duration = artificialAnimationDuration
+                })
+
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    moveUpdateListener?.onMoveStart(srcEntry, dstEntry)
+                }
+
+                override fun onAnimationEnd(animation: Animator) {
+                    movingEntry = null
+                    moveY = 0F
+                    moveX = 0F
+                    invalidate()
+
+                    moveUpdateListener?.onMoveEnd(srcEntry, dstEntry)
+                }
+            })
+
+            duration = artificialAnimationDuration
+            start()
+        }
+
+        return true
+    }
+
+    private fun playerMoveAllowed(player: PlayerNum): Boolean {
+        return when (player) {
+            PlayerNum.NOPLAYER -> false
+            PlayerNum.FIRST -> allowFirstPlayerMove
+            PlayerNum.SECOND -> allowSecondPlayerMove
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -287,7 +373,7 @@ class CheckersGridView(
                 val y = (event.y / singleCellSize).toInt()
 
                 val entry = gridData.getEntryByCoords(x, y)
-                if (!gridData.playerMoveAllowed(entry.player)) {
+                if (!playerMoveAllowed(entry.player)) {
                     return true
                 }
 
@@ -333,15 +419,12 @@ class CheckersGridView(
                 moveOffsetX = 0F
                 moveOffsetY = 0F
 
-                movingEntry?.let {
-                    if (gridData.attemptMove(it, dstEntry)) {
-                        movingEntry = dstEntry
-                    }
-                }
-
-                movingEntry?.let { entry ->
-                    val dstX = ((entry.x) + 0.5F) * singleCellSize
-                    val dstY = ((entry.y) + 0.5F) * singleCellSize
+                val srcEntry = movingEntry ?: return false
+                movingEntry?.let { gridEntry ->
+                    val entry =
+                        if (gridData.moveAllowed(gridEntry, dstEntry)) dstEntry else gridEntry
+                    val dstX = (entry.x + 0.5F) * singleCellSize
+                    val dstY = (entry.y + 0.5F) * singleCellSize
 
                     val srcX = moveX
                     val srcY = moveY
@@ -359,7 +442,6 @@ class CheckersGridView(
                                     moveX = it.animatedValue as Float
                                 }
                             },
-
                             ValueAnimator.ofFloat(srcY, dstY).apply {
                                 addUpdateListener {
                                     moveY = it.animatedValue as Float
@@ -367,12 +449,18 @@ class CheckersGridView(
                             })
 
                         addListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationStart(animation: Animator?) {
+                                moveUpdateListener?.onMoveStart(srcEntry, dstEntry)
+                            }
+
                             override fun onAnimationEnd(animation: Animator) {
                                 movingEntry = null
                                 moveY = 0F
                                 moveX = 0F
                                 returnAnimatorSet = null
                                 invalidate()
+
+                                moveUpdateListener?.onMoveEnd(srcEntry, dstEntry)
                             }
                         })
 
@@ -406,4 +494,10 @@ class CheckersGridView(
         val size = if (width > height) height else width
         setMeasuredDimension(size, size)
     }
+}
+
+interface MoveUpdateListener {
+    fun onMoveStart(srcEntry: GridEntry, dstEntry: GridEntry)
+
+    fun onMoveEnd(srcEntry: GridEntry, dstEntry: GridEntry)
 }
