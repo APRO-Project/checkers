@@ -3,9 +3,10 @@ package com.cyberbot.checkers.ui.activity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
+import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
-import com.cyberbot.checkers.ui.view.MoveUpdateListener
+import com.cyberbot.checkers.ui.view.MoveAttemptListener
 import kotlinx.android.synthetic.main.activity_game.*
 
 class GameActivity : AppCompatActivity() {
@@ -17,22 +18,22 @@ class GameActivity : AppCompatActivity() {
 
         val gridData = checkersGridView.gridData
 
-        checkersGridView.moveUpdateListener = object : MoveUpdateListener {
-            override fun onMoveStart(srcEntry: GridEntry, dstEntry: GridEntry) {
-                if(srcEntry.player == PlayerNum.FIRST) {
-                    checkersGridView.userInteractionEnabled = false
-                    move_player2.text = "Busy"
-                }
+        checkersGridView.moveAttemptListener = object : MoveAttemptListener {
+            override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
+                move_player2.text = "Busy"
             }
 
-            override fun onMoveEnd(srcEntry: GridEntry, dstEntry: GridEntry) {
-                if(srcEntry.player == PlayerNum.FIRST) {
-                    checkersGridView.userInteractionEnabled = true
-                    move_player2.text = getString(R.string.game_player_turn_info)
-                }
-                if (srcEntry == dstEntry) return
+            override fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
+                grid.attemptMove(srcEntry, dstEntry)
+                move_player2.text = getString(R.string.game_player_turn_info)
+            }
 
-                gridData.attemptMove(srcEntry, dstEntry)
+            override fun onUserMoveStart(grid: Grid, srcEntry: GridEntry) {
+
+            }
+
+            override fun onUserMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
+                grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
                     val src: GridEntry = gridData.first {
                         it.player == PlayerNum.FIRST

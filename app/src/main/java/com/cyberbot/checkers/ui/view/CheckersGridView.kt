@@ -10,7 +10,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.cyberbot.checkers.R
@@ -129,12 +128,12 @@ class CheckersGridView(
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
+    private var userInteractionEnabled = true
 
     var allowFirstPlayerMove = false
     var allowSecondPlayerMove = true
-    var userInteractionEnabled = true
 
-    var moveUpdateListener: MoveUpdateListener? = null
+    var moveAttemptListener: MoveAttemptListener? = null
 
     var riseAnimationDuration = 500L
     var artificialAnimationDuration = 500L
@@ -292,16 +291,20 @@ class CheckersGridView(
 
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    moveUpdateListener?.onMoveStart(srcEntry, dstEntry)
+                    userInteractionEnabled = false
+
+                    moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
+                    userInteractionEnabled = true
                     movingEntry = null
                     moveY = 0F
                     moveX = 0F
-                    invalidate()
 
-                    moveUpdateListener?.onMoveEnd(srcEntry, dstEntry)
+                    moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
+
+                    invalidate()
                 }
             })
 
@@ -382,6 +385,8 @@ class CheckersGridView(
                     return true
                 }
 
+                moveAttemptListener?.onUserMoveStart(gridData, entry)
+
                 val cx = (entry.x + 0.5F) * singleCellSize
                 val cy = (entry.y + 0.5F) * singleCellSize
 
@@ -455,7 +460,6 @@ class CheckersGridView(
 
                         addListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationStart(animation: Animator?) {
-                                moveUpdateListener?.onMoveStart(srcEntry, dstEntry)
                                 userInteractionEnabled = false
                             }
 
@@ -465,9 +469,9 @@ class CheckersGridView(
                                 moveY = 0F
                                 moveX = 0F
                                 returnAnimatorSet = null
-                                invalidate()
 
-                                moveUpdateListener?.onMoveEnd(srcEntry, dstEntry)
+                                moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, dstEntry)
+                                invalidate()
                             }
                         })
 
@@ -503,8 +507,10 @@ class CheckersGridView(
     }
 }
 
-interface MoveUpdateListener {
-    fun onMoveStart(srcEntry: GridEntry, dstEntry: GridEntry)
+interface MoveAttemptListener {
+    fun onUserMoveStart(grid: Grid, srcEntry: GridEntry)
+    fun onUserMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 
-    fun onMoveEnd(srcEntry: GridEntry, dstEntry: GridEntry)
+    fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
+    fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 }
