@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Checkers</string>
     <string name="game_player_turn_info">Your turn</string>
+    <string name="game_start">Start</string>
 </resources>
