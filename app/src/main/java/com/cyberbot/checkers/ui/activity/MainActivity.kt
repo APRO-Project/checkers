@@ -1,9 +1,9 @@
-package com.cyberbot.checkers
+package com.cyberbot.checkers.ui.activity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.cyberbot.checkers.ui.GameActivity
+import com.cyberbot.checkers.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -11,8 +11,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        game_start_button.setOnClickListener {
-            val intent = Intent(this@MainActivity, GameActivity::class.java)
+
+        button_game_start.setOnClickListener {
+            val intent = Intent(this, GameActivity::class.java)
+            startActivity(intent)
+        }
+
+        button_settings.setOnClickListener {
+            val intent = Intent(this, SettingActivity::class.java)
             startActivity(intent)
         }
     }
