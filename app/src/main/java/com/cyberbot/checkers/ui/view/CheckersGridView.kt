@@ -456,9 +456,11 @@ class CheckersGridView(
                         addListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationStart(animation: Animator?) {
                                 moveUpdateListener?.onMoveStart(srcEntry, dstEntry)
+                                userInteractionEnabled = false
                             }
 
                             override fun onAnimationEnd(animation: Animator) {
+                                userInteractionEnabled = true
                                 movingEntry = null
                                 moveY = 0F
                                 moveX = 0F
