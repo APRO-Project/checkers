@@ -33,6 +33,10 @@ class GameActivity : AppCompatActivity() {
             }
 
             override fun onUserMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
+                if(srcEntry == dstEntry) {
+                    return
+                }
+
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
                     val src: GridEntry = gridData.first {
