@@ -21,6 +21,7 @@ jobs:
         run: bash ./gradlew test --stacktrace
   build-and-release:
     runs-on: [ubuntu-latest]
+    needs: [test]
     name: Build and release
     steps: 
       - uses: actions/checkout@v1
@@ -53,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./app/build/outputs/apk/debug/app-debug.apk
+          asset_path: ./app/build/outputs/apk/release/app-release-unsigned.apk
           asset_name: chekers-release-${{ github.ref }}.apk
           asset_content_type: application/vnd.android.package-archive
           
