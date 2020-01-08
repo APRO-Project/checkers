@@ -22,6 +22,7 @@ jobs:
   build-and-release:
     runs-on: [ubuntu-latest]
     name: Build and release
+    needs: [test]
     steps: 
       - uses: actions/checkout@v1
       
