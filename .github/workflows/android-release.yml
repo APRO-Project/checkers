@@ -7,7 +7,7 @@ name: Create Release
 
 jobs:
   test:
-    name: Test
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
