@@ -155,7 +155,8 @@ class CheckersGridView(
     var gridData = Grid(8, 3)
         set(value) {
             field = value
-            singleCellSize = viewWidth.toFloat() / value.size
+
+            updateDimensions()
             invalidate()
         }
 
@@ -325,6 +326,12 @@ class CheckersGridView(
             PlayerNum.FIRST -> allowFirstPlayerMove
             PlayerNum.SECOND -> allowSecondPlayerMove
         }
+    }
+
+    private fun updateDimensions() {
+        singleCellSize = viewWidth.toFloat() / gridData.size
+        playerRadius = singleCellSize * playerSize * 0.5F
+        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -497,10 +504,7 @@ class CheckersGridView(
         }
 
         viewWidth = w
-        singleCellSize = viewWidth.toFloat() / gridData.size
-        playerRadius = singleCellSize * playerSize * 0.5F
-        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
-
+        updateDimensions()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
