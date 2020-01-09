@@ -9,7 +9,7 @@
     <string name="preference_player_rows">player_rows</string>
     <string name="preference_can_move_backwards">can_move_backwards</string>
     <string name="preference_can_capture_backwards">can_capture_backwards</string>
-    <string name="preference_flying_king">can_flying_king</string>
+    <string name="preference_flying_king">flying_king</string>
 
     <string name="settings_board_preview">Preview</string>
     <string name="settings_grid_size">Grid size</string>
