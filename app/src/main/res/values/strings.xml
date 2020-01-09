@@ -10,4 +10,13 @@
     <string name="preference_can_move_backwards">can_move_backwards</string>
     <string name="preference_can_capture_backwards">can_capture_backwards</string>
     <string name="preference_flying_king">can_capture_backwards</string>
+
+    <string name="settings_board_preview">Preview</string>
+    <string name="settings_grid_size">Grid size</string>
+    <string name="settings_button_8_8">8x8</string>
+    <string name="settings_button_10_10">10x10</string>
+    <string name="settings_button_12_12">12x12</string>
+    <string name="settings_can_move_backward">Can move backward</string>
+    <string name="settings_can_capture_backward">Can capture backward</string>
+    <string name="settings_flying_king">Flying king</string>
 </resources>
