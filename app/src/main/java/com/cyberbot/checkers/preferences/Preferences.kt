@@ -19,16 +19,20 @@ class Preferences private constructor(
                 ) ?: throw RuntimeException("Unable to get preferences")
 
                 val gridSize = sharedPref.getInt(getString(R.string.preference_grid_size), 10)
+
                 val playerRows = sharedPref.getInt(getString(R.string.preference_player_rows), 4)
+
                 val canMoveBackwards =
                     sharedPref.getBoolean(getString(R.string.preference_can_move_backwards), false)
+
                 val canCaptureBackwards =
                     sharedPref.getBoolean(
                         getString(R.string.preference_can_capture_backwards),
-                        false
+                        true
                     )
+
                 val flyingKing =
-                    sharedPref.getBoolean(getString(R.string.preference_flying_king), false)
+                    sharedPref.getBoolean(getString(R.string.preference_flying_king), true)
 
                 return Preferences(
                     gridSize,
@@ -52,7 +56,10 @@ class Preferences private constructor(
                 it.putInt(getString(R.string.preference_grid_size), gridSize)
                 it.putInt(getString(R.string.preference_player_rows), playerRows)
                 it.putBoolean(getString(R.string.preference_can_move_backwards), canMoveBackwards)
-                it.putBoolean(getString(R.string.preference_can_capture_backwards), canCaptureBackwards)
+                it.putBoolean(
+                    getString(R.string.preference_can_capture_backwards),
+                    canCaptureBackwards
+                )
                 it.putBoolean(getString(R.string.preference_flying_king), flyingKing)
                 it.apply()
             }
