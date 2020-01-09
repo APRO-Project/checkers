@@ -6,24 +6,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Grid implements Iterable<GridEntry> {
-    private int size;
-    private int playerRows;
-    private ArrayList<GridEntry> gridEntries;
+    private final int size;
+    private final int playerRows;
+    private final ArrayList<GridEntry> gridEntries;
 
     public int getSize() {
         return size;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
     public int getPlayerRows() {
         return playerRows;
-    }
-
-    public void setPlayerRows(int playerRows) {
-        this.playerRows = playerRows;
     }
 
     public Grid(int size, int playerRows) {
@@ -48,7 +40,7 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public Grid() {
-        this(8, 3);
+        this(10, 4);
     }
 
     public GridEntry getEntryByCoords(int x, int y) throws IndexOutOfBoundsException {
@@ -71,8 +63,8 @@ public class Grid implements Iterable<GridEntry> {
         if(dst == src || !moveAllowed(src, dst))
             return false;
 
-        int srcIdx = gridEntries.indexOf(src);
-        int dstIdx = gridEntries.indexOf(dst);
+        final int srcIdx = gridEntries.indexOf(src);
+        final int dstIdx = gridEntries.indexOf(dst);
 
         if(srcIdx == -1 || dstIdx == -1)
             throw new RuntimeException("GridEntry destination or source not part of the Grid");

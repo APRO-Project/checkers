@@ -22,7 +22,7 @@ class GridTest {
     @Test
     void shouldHaveADefaultConstructor() {
         Grid grid = new Grid();
-        assertEquals(8, grid.getSize());
+        assertEquals(10, grid.getSize());
     }
 
     @Test

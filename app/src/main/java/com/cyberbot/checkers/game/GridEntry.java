@@ -4,24 +4,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class GridEntry {
-    private int y;
-    private int x;
+    private final int y;
+    private final int x;
     private PlayerNum player = PlayerNum.NOPLAYER;
 
     public int getY() {
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public int getX() {
         return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
     }
 
     public PlayerNum getPlayer() {
