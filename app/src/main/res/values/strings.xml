@@ -3,4 +3,11 @@
     <string name="game_player_turn_info">Your turn</string>
     <string name="game_start">Start</string>
     <string name="game_options">Options</string>
+    
+    <string name="preference_file_key">main_preferences</string>
+    <string name="preference_grid_size">grid_size</string>
+    <string name="preference_player_rows">player_rows</string>
+    <string name="preference_can_move_backwards">can_move_backwards</string>
+    <string name="preference_can_capture_backwards">can_capture_backwards</string>
+    <string name="preference_flying_king">can_capture_backwards</string>
 </resources>
