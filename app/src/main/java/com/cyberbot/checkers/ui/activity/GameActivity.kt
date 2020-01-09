@@ -1,6 +1,5 @@
 package com.cyberbot.checkers.ui.activity
 
-import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
@@ -10,6 +9,7 @@ import com.cyberbot.checkers.fx.play
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.preferences.Preferences
 import com.cyberbot.checkers.ui.view.MoveAttemptListener
 import kotlinx.android.synthetic.main.activity_game.*
 
@@ -21,9 +21,11 @@ class GameActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game)
         move_player2.text = getString(R.string.game_player_turn_info)
 
-        val gridData = checkersGridView.gridData
+        val pref = Preferences.fromContext(this)
+        val gridData = Grid(pref.gridSize, pref.playerRows)
+        settingsGridPreview.gridData = gridData
 
-        checkersGridView.moveAttemptListener = object : MoveAttemptListener {
+        settingsGridPreview.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
                 play(this@GameActivity, getRandomMoveSoundRes())
                 move_player2.text = "Busy"
@@ -58,7 +60,7 @@ class GameActivity : AppCompatActivity() {
                         play(this@GameActivity, getRandomAiThinkSoundRes())
                         Thread.sleep(1000)
                         runOnUiThread {
-                            checkersGridView.attemptMove(src, dst)
+                            settingsGridPreview.attemptMove(src, dst)
                         }
                     }.start()
                 }
