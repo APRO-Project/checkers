@@ -19,7 +19,7 @@ class Preferences private constructor(
                 ) ?: throw RuntimeException("Unable to get preferences")
 
                 val gridSize = sharedPref.getInt(getString(R.string.preference_grid_size), 10)
-                val playerRows = sharedPref.getInt(getString(R.string.preference_grid_size), 10)
+                val playerRows = sharedPref.getInt(getString(R.string.preference_grid_size), 4)
                 val canMoveBackwards =
                     sharedPref.getBoolean(getString(R.string.preference_can_move_backwards), false)
                 val canCaptureBackwards =
