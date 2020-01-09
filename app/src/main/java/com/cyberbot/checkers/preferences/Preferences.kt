@@ -1,11 +1,7 @@
 package com.cyberbot.checkers.preferences
 
 import android.content.Context
-import android.content.SharedPreferences
-import androidx.annotation.IntegerRes
-import androidx.annotation.StringRes
 import com.cyberbot.checkers.R
-import java.lang.RuntimeException
 
 class Preferences private constructor(
     var gridSize: Int,
