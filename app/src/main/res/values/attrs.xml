@@ -7,5 +7,10 @@
         <attr name="player_color2" format="color" />
         <attr name="player_outline_color1" format="color" />
         <attr name="player_outline_color2" format="color" />
+        <attr name="view_size" format="enum" >
+            <enum name="auto" value="0"/>
+            <enum name="width" value="1"/>
+            <enum name="height" value="2"/>
+        </attr>
     </declare-styleable>
 </resources>

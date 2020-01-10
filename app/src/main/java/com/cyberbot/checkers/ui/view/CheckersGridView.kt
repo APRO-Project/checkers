@@ -18,6 +18,7 @@ import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
 import java.lang.Float.max
 import java.lang.Float.min
+import java.lang.RuntimeException
 
 
 class CheckersGridView(
@@ -124,7 +125,8 @@ class CheckersGridView(
     }
     //</editor-fold>
 
-    private var viewSize: Int = 0
+    private var viewMeasureType: Int = 0
+    private var viewWidth: Int = 0
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
@@ -153,7 +155,8 @@ class CheckersGridView(
     var gridData = Grid(8, 3)
         set(value) {
             field = value
-            singleCellSize = viewSize.toFloat() / value.size
+
+            updateDimensions()
             invalidate()
         }
 
@@ -193,6 +196,8 @@ class CheckersGridView(
                     getColor(R.styleable.CheckersGridView_player_outline_color1, Color.BLACK)
                 playerOutlineColor2 =
                     getColor(R.styleable.CheckersGridView_player_outline_color1, Color.WHITE)
+                viewMeasureType =
+                    getInteger(R.styleable.CheckersGridView_view_size, 0)
             } finally {
                 recycle()
             }
@@ -323,6 +328,12 @@ class CheckersGridView(
         }
     }
 
+    private fun updateDimensions() {
+        singleCellSize = viewWidth.toFloat() / gridData.size
+        playerRadius = singleCellSize * playerSize * 0.5F
+        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -413,8 +424,8 @@ class CheckersGridView(
             }
             MotionEvent.ACTION_MOVE -> {
                 userInteracting = true
-                moveX = max(min(event.x - moveOffsetX, viewSize.toFloat() - 1), 0F)
-                moveY = max(min(event.y - moveOffsetY, viewSize.toFloat() - 1), 0F)
+                moveX = max(min(event.x - moveOffsetX, viewWidth.toFloat() - 1), 0F)
+                moveY = max(min(event.y - moveOffsetY, viewWidth.toFloat() - 1), 0F)
 
                 invalidate()
 
@@ -492,17 +503,21 @@ class CheckersGridView(
             return
         }
 
-        viewSize = w
-        singleCellSize = viewSize.toFloat() / gridData.size
-        playerRadius = singleCellSize * playerSize * 0.5F
-        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
-
+        viewWidth = w
+        updateDimensions()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
-        val size = if (width > height) height else width
+        val size = when(viewMeasureType) {
+            0 -> {
+                if (width > height) height else width
+            }
+            1 -> width
+            2 -> height
+            else -> throw RuntimeException("Invalid view_size attribute")
+        }
         setMeasuredDimension(size, size)
     }
 }
