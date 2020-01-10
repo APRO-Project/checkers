@@ -23,12 +23,12 @@ class GameActivity : AppCompatActivity() {
 
         val pref = Preferences.fromContext(this)
         val gridData = Grid(pref.gridSize, pref.playerRows)
-        settingsGridPreview.gridData = gridData
+        checkersGridView.gridData = gridData
 
-        settingsGridPreview.moveAttemptListener = object : MoveAttemptListener {
+        checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
                 play(this@GameActivity, getRandomMoveSoundRes())
-                move_player2.text = "Busy"
+                move_player2.text = "Moving"
             }
 
             override fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
@@ -47,21 +47,23 @@ class GameActivity : AppCompatActivity() {
 
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
-                    val src: GridEntry = gridData.filter {
+                    val src: GridEntry = grid.filter {
                         it.player == PlayerNum.FIRST
                     }.random()
 
-                    val dst: GridEntry = gridData.filter {
+                    val dst: GridEntry = grid.filter {
                         it != src && gridData.moveAllowed(src, it)
                     }.random()
 
-
+                    checkersGridView.allowSecondPlayerMove = false
+                    move_player2.text = "Thinking"
                     Thread {
                         play(this@GameActivity, getRandomAiThinkSoundRes())
                         Thread.sleep(1000)
                         runOnUiThread {
-                            settingsGridPreview.attemptMove(src, dst)
+                            checkersGridView.attemptMove(src, dst)
                         }
+                        checkersGridView.allowSecondPlayerMove = true
                     }.start()
                 }
             }
