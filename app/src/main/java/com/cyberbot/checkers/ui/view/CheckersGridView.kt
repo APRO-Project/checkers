@@ -493,7 +493,6 @@ class CheckersGridView(
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                userInteracting = false
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
@@ -501,6 +500,7 @@ class CheckersGridView(
                 moveOffsetX = 0F
                 moveOffsetY = 0F
 
+                userInteracting = false
                 val srcEntry = movingEntry ?: return false
                 userInteractionEnabled = false
 
