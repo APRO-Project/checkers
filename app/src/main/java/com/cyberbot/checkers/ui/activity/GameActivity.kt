@@ -22,7 +22,7 @@ class GameActivity : AppCompatActivity() {
         move_player2.text = getString(R.string.game_player_turn_info)
 
         val pref = Preferences.fromContext(this)
-        val gridData = Grid(pref.gridSize, pref.playerRows)
+        val gridData = Grid.fromPreferences(pref)
         checkersGridView.gridData = gridData
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
@@ -52,7 +52,7 @@ class GameActivity : AppCompatActivity() {
                     }.random()
 
                     val dst: GridEntry = grid.filter {
-                        it != src && gridData.calculateAllowedMoves(src, false).contains(it)
+                        it != src && gridData.moveAllowed(src, it)
                     }.random()
 
                     checkersGridView.allowSecondPlayerMove = false
