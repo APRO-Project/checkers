@@ -87,8 +87,7 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean moveAllowed(GridEntry src, GridEntry dst) {
-        calculateAllowedCaptures(src, false);
-        return src == dst || calculateAllowedMoves(src, false).contains(dst);
+        return src == dst || getAllowedMoves(src, true).contains(dst);
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
@@ -107,7 +106,7 @@ public class Grid implements Iterable<GridEntry> {
         gridEntries.get(srcIdx).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(srcIdx).setPieceType(PieceType.UNASSIGNED);
 
-        // TODO: Clear entries' cache
+        gridEntries.forEach(GridEntry::clearCache);
 
         return true;
     }
@@ -164,7 +163,24 @@ public class Grid implements Iterable<GridEntry> {
         return adjacentEntries;
     }
 
-    public HashSet<GridEntry> calculateAllowedMoves(@NotNull GridEntry entry, boolean storeInCache) {
+    public HashSet<GridEntry> getAllowedMoves(@NotNull GridEntry entry, boolean storeInCache) {
+        if(entry.getAllowedMovesCache() != null) return entry.getAllowedMovesCache();
+
+        HashSet<GridEntry> allowedMoves = new HashSet<>();
+
+        if(entry.getPieceType() == PieceType.ORDINARY) {
+            allowedMoves = calculateOrdinaryPieceMoves(entry);
+        }
+        else if(entry.getPieceType() == PieceType.KING) {
+            // TODO: Calculate king moves
+        }
+
+        if(storeInCache) entry.setAllowedMovesCache(allowedMoves);
+
+        return allowedMoves;
+    }
+
+    private HashSet<GridEntry> calculateOrdinaryPieceMoves(@NotNull GridEntry entry) {
         HashSet<GridEntry> allowedMoves = new HashSet<>();
         for(GridEntry adjEntry: getAdjacentEntries(entry)) {
             if(adjEntry.getPlayer() == PlayerNum.NOPLAYER) {
@@ -176,25 +192,29 @@ public class Grid implements Iterable<GridEntry> {
             }
         }
 
-        if(storeInCache) entry.setAllowedMovesCache(allowedMoves);
-
         return allowedMoves;
     }
 
-    public CaptureChain calculateAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
+    public CaptureChain getAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
+        if(entry.getAllowedCapturesCache() != null) return entry.getAllowedCapturesCache();
+
         CaptureChain root = new CaptureChain(entry, null, null);
-        capture(root);
+
+        if(entry.getPieceType() == PieceType.ORDINARY) {
+            calculateOrdinaryPieceCaptures(root);
+        }
+        else if(entry.getPieceType() == PieceType.KING) {
+            // TODO: Calculate king captures
+        }
 
         if(storeInCache) entry.setAllowedCapturesCache(root);
-
-        if(!root.getNextCaptures().isEmpty())
-            System.out.println("There are possible captures!!!");
 
         return root;
     }
 
-    private void capture(CaptureChain lastCapture) {
+    private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture) {
         GridEntry lastLocation = lastCapture.getLocationAfterCapture();
+
         for(GridEntry adjEntry: getAdjacentEntries(lastLocation)) {
             if(adjEntry.getPlayer() != PlayerNum.NOPLAYER
                     && adjEntry.getPlayer() != lastLocation.getPlayer()
@@ -210,7 +230,7 @@ public class Grid implements Iterable<GridEntry> {
                             && !lastCapture.checkIfEntryVisited(entryAfter)) {
                         CaptureChain nextCapture = new CaptureChain(entryAfter, adjEntry, lastCapture);
                         lastCapture.addNextCapture(nextCapture);
-                        capture(nextCapture);
+                        calculateOrdinaryPieceCaptures(nextCapture);
                     }
                 }
             }

@@ -444,7 +444,7 @@ class CheckersGridView(
 
                 if (userInteracting) {
                     // TODO: Replace with `getAllowedMoves` when that method is created
-                    val allowedEntries = gridData.calculateAllowedMoves(srcEntry, false)
+                    val allowedEntries = gridData.getAllowedMoves(srcEntry, false)
                     allowedEntries?.forEach {
                         drawGridEntry(this, it, paintGridColorMoveAllowedHint)
                     }
