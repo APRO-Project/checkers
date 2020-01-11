@@ -22,7 +22,7 @@ class GameActivity : AppCompatActivity() {
         move_player2.text = getString(R.string.game_player_turn_info)
 
         val pref = Preferences.fromContext(this)
-        val gridData = Grid(pref.gridSize, pref.playerRows)
+        val gridData = Grid.fromPreferences(pref)
         checkersGridView.gridData = gridData
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
@@ -48,7 +48,7 @@ class GameActivity : AppCompatActivity() {
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
                     val src: GridEntry = grid.filter {
-                        it.player == PlayerNum.FIRST
+                        it.player == PlayerNum.FIRST && grid.calculateAllowedMoves(it, false).isNotEmpty()
                     }.random()
 
                     val dst: GridEntry = grid.filter {

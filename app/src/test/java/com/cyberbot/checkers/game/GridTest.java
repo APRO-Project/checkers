@@ -1,9 +1,5 @@
 package com.cyberbot.checkers.game;
 
-import com.cyberbot.checkers.game.Grid;
-import com.cyberbot.checkers.game.GridEntry;
-import com.cyberbot.checkers.game.PlayerNum;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -213,10 +209,10 @@ class GridTest {
      */
     private static Stream<Arguments> validMovesProvider() {
         return Stream.of(
-                Arguments.of(8, 3, 2, 1, 5, 4),
-                Arguments.of(8, 3, 1, 0, 4, 3),
-                Arguments.of(10, 4, 2, 3, 6, 5),
-                Arguments.of(10, 4, 4, 3, 7, 4)
+                Arguments.of(8, 3, 1, 2, 2, 3),
+                Arguments.of(8, 3, 1, 2, 0, 3),
+                Arguments.of(10, 4, 2, 3, 1, 4),
+                Arguments.of(10, 4, 2, 3, 3, 4)
         );
     }
 }
