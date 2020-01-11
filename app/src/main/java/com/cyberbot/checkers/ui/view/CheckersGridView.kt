@@ -166,19 +166,29 @@ class CheckersGridView(
     var artificialAnimationDuration = 100L
     var returnAnimationDuration = 500L
     var playerScaleMoving: Float = 1.35F
-    var playerSize: Float = 0.6F
+
+    /**
+     * In relation to the cell size
+     */
+    var playerSize: Float = 0.65F
         set(value) {
             field = value
             invalidate()
         }
 
-    var playerOutlineSize: Float = 0.7F
+    /**
+     * In relation to player size
+     */
+    var playerOutlineSize: Float = 1.175F
         set(value) {
             field = value
             invalidate()
         }
 
-    var playerIconSize: Float = 0.4F
+    /**
+     * In relation to the player size
+     */
+    var playerIconSize: Float = 0.75F
         set(value) {
             field = value
             invalidate()
@@ -409,8 +419,8 @@ class CheckersGridView(
     private fun updateDimensions() {
         singleCellSize = viewWidth.toFloat() / gridData.size
         playerRadius = singleCellSize * playerSize * 0.5F
-        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
-        playerRadiusIcon = singleCellSize * playerIconSize * 0.5F
+        playerRadiusOutline = singleCellSize * playerSize * playerOutlineSize * 0.5F
+        playerRadiusIcon = singleCellSize * playerSize * playerIconSize * 0.5F
     }
 
     override fun onDraw(canvas: Canvas) {
