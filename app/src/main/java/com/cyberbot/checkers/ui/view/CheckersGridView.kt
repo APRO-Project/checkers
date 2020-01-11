@@ -14,10 +14,11 @@ import android.view.View
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
+import com.cyberbot.checkers.game.PieceType
 import com.cyberbot.checkers.game.PlayerNum
 import java.lang.Float.max
 import java.lang.Float.min
-import java.lang.RuntimeException
+import kotlin.math.roundToInt
 
 
 class CheckersGridView(
@@ -153,6 +154,7 @@ class CheckersGridView(
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
+    private var playerRadiusIcon: Float = 0F
     private var userInteractionEnabled = true
 
     var allowFirstPlayerMove = false
@@ -169,7 +171,14 @@ class CheckersGridView(
             field = value
             invalidate()
         }
+
     var playerOutlineSize: Float = 0.7F
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    var playerIconSize: Float = 0.4F
         set(value) {
             field = value
             invalidate()
@@ -292,6 +301,24 @@ class CheckersGridView(
                     // Do not draw
                 }
             }
+
+            if (entry.pieceType == PieceType.KING) {
+                val d = resources.getDrawable(R.drawable.ic_king, null)
+                when (entry.player) {
+                    PlayerNum.NOPLAYER, null -> return
+                    PlayerNum.FIRST -> d.setTint(playerOutlineColor1)
+                    PlayerNum.SECOND -> d.setTint(playerOutlineColor2)
+                }
+
+                d.setBounds(
+                    (cx - playerRadiusIcon * scale).roundToInt(),
+                    (cy - playerRadiusIcon * scale).roundToInt(),
+                    (cx + playerRadiusIcon * scale).roundToInt(),
+                    (cy + playerRadiusIcon * scale).roundToInt()
+                )
+
+                d.draw(canvas)
+            }
         }
     }
 
@@ -383,6 +410,7 @@ class CheckersGridView(
         singleCellSize = viewWidth.toFloat() / gridData.size
         playerRadius = singleCellSize * playerSize * 0.5F
         playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
+        playerRadiusIcon = singleCellSize * playerIconSize * 0.5F
     }
 
     override fun onDraw(canvas: Canvas) {
