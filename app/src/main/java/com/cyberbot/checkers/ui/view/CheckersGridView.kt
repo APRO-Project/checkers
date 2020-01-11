@@ -502,6 +502,8 @@ class CheckersGridView(
                 moveOffsetY = 0F
 
                 val srcEntry = movingEntry ?: return false
+                userInteractionEnabled = false
+
                 movingEntry?.let { gridEntry ->
                     val entry =
                         if (gridData.moveAllowed(gridEntry, dstEntry)) dstEntry else gridEntry
@@ -531,10 +533,6 @@ class CheckersGridView(
                             })
 
                         addListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationStart(animation: Animator?) {
-                                userInteractionEnabled = false
-                            }
-
                             override fun onAnimationEnd(animation: Animator) {
                                 userInteractionEnabled = true
                                 movingEntry = null
