@@ -540,7 +540,7 @@ class CheckersGridView(
                                 moveX = 0F
                                 returnAnimatorSet = null
 
-                                moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, dstEntry)
+                                moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
                                 invalidate()
                             }
                         })
