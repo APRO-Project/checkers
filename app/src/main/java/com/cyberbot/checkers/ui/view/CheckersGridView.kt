@@ -7,7 +7,6 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -15,21 +14,17 @@ import android.view.View
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
+import com.cyberbot.checkers.game.PieceType
 import com.cyberbot.checkers.game.PlayerNum
 import java.lang.Float.max
 import java.lang.Float.min
-import java.lang.RuntimeException
+import kotlin.math.roundToInt
 
 
 class CheckersGridView(
     context: Context,
     attrs: AttributeSet?
 ) : View(context, attrs) {
-    companion object {
-        val COLOR_DEFAULT_GRID = Color.rgb(0.5F, 0.5F, 0.5F)
-        val COLOR_DEFAULT_DROP_ALLOWED = Color.rgb(118, 230, 62)
-        val COLOR_DEFAULT_DROP_FORBIDDEN = Color.rgb(230, 62, 62)
-    }
 
     // <editor-fold defaultstate="collapsed" desc="Colors and paint">
     var gridColorMoveAllowed: Int = 0
@@ -38,18 +33,35 @@ class CheckersGridView(
             paintGridColorMoveAllowed.color = value
             invalidate()
         }
+
+    var gridColorMoveAllowedHint: Int = 0
+        set(value) {
+            field = value
+            paintGridColorMoveAllowedHint.color = value
+            invalidate()
+        }
+
     var gridColorMoveForbidden: Int = 0
         set(value) {
             field = value
             paintGridColorMoveForbidden.color = value
             invalidate()
         }
+
+    var gridColorMoveSource: Int = 0
+        set(value) {
+            field = value
+            paintGridColorMoveSource.color = value
+            invalidate()
+        }
+
     var gridColorLegal: Int = 0
         set(value) {
             field = value
             paintGridColorLegal.color = value
             invalidate()
         }
+
     var girdColorIllegal: Int = 0
         set(value) {
             field = value
@@ -63,6 +75,7 @@ class CheckersGridView(
             paintPlayerColor1.color = value
             invalidate()
         }
+
     var playerColor2: Int = 0
         set(value) {
             field = value
@@ -76,6 +89,7 @@ class CheckersGridView(
             paintPlayerOutlineColor1.color = value
             invalidate()
         }
+
     var playerOutlineColor2: Int = 0
         set(value) {
             field = value
@@ -88,8 +102,18 @@ class CheckersGridView(
         style = Paint.Style.FILL
     }
 
+    private val paintGridColorMoveAllowedHint = Paint(0).apply {
+        color = gridColorMoveAllowedHint
+        style = Paint.Style.FILL
+    }
+
     private val paintGridColorMoveForbidden = Paint(0).apply {
         color = gridColorMoveForbidden
+        style = Paint.Style.FILL
+    }
+
+    private val paintGridColorMoveSource = Paint(0).apply {
+        color = gridColorMoveSource
         style = Paint.Style.FILL
     }
 
@@ -130,6 +154,7 @@ class CheckersGridView(
     private var singleCellSize: Float = 0F
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
+    private var playerRadiusIcon: Float = 0F
     private var userInteractionEnabled = true
 
     var allowFirstPlayerMove = false
@@ -141,12 +166,29 @@ class CheckersGridView(
     var artificialAnimationDuration = 100L
     var returnAnimationDuration = 500L
     var playerScaleMoving: Float = 1.35F
-    var playerSize: Float = 0.6F
+
+    /**
+     * In relation to the cell size
+     */
+    var playerSize: Float = 0.65F
         set(value) {
             field = value
             invalidate()
         }
-    var playerOutlineSize: Float = 0.7F
+
+    /**
+     * In relation to player size
+     */
+    var playerOutlineSize: Float = 1.175F
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /**
+     * In relation to the player size
+     */
+    var playerIconSize: Float = 0.75F
         set(value) {
             field = value
             invalidate()
@@ -178,24 +220,52 @@ class CheckersGridView(
             try {
                 gridColorMoveAllowed =
                     getColor(
-                        R.styleable.CheckersGridView_grid_color_legal,
-                        COLOR_DEFAULT_DROP_ALLOWED
+                        R.styleable.CheckersGridView_grid_color_move_allowed,
+                        context.getColor(R.color.game_color_grid_move_allowed)
+                    )
+                gridColorMoveAllowedHint =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_move_allowed_hint,
+                        context.getColor(R.color.game_color_grid_move_allowed_hint)
                     )
                 gridColorMoveForbidden =
                     getColor(
-                        R.styleable.CheckersGridView_grid_color_legal,
-                        COLOR_DEFAULT_DROP_FORBIDDEN
+                        R.styleable.CheckersGridView_grid_color_move_forbidden,
+                        context.getColor(R.color.game_color_grid_move_forbidden)
+                    )
+                gridColorMoveSource =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_move_source,
+                        context.getColor(R.color.game_color_grid_move_source)
                     )
                 gridColorLegal =
-                    getColor(R.styleable.CheckersGridView_grid_color_legal, COLOR_DEFAULT_GRID)
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_legal,
+                        context.getColor(R.color.game_color_grid_default_legal)
+                    )
                 girdColorIllegal =
-                    getColor(R.styleable.CheckersGridView_grid_color_illegal, Color.WHITE)
-                playerColor1 = getColor(R.styleable.CheckersGridView_player_color1, Color.WHITE)
-                playerColor2 = getColor(R.styleable.CheckersGridView_player_color2, Color.BLACK)
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_illegal,
+                        context.getColor(R.color.game_color_grid_default_illegal)
+                    )
+                playerColor1 = getColor(
+                    R.styleable.CheckersGridView_player_color1,
+                    context.getColor(R.color.game_color_player1)
+                )
+                playerColor2 = getColor(
+                    R.styleable.CheckersGridView_player_color2,
+                    context.getColor(R.color.game_color_player2)
+                )
                 playerOutlineColor1 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.BLACK)
+                    getColor(
+                        R.styleable.CheckersGridView_player_outline_color1,
+                        context.getColor(R.color.game_color_player_outline1)
+                    )
                 playerOutlineColor2 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.WHITE)
+                    getColor(
+                        R.styleable.CheckersGridView_player_outline_color1,
+                        context.getColor(R.color.game_color_player_outline2)
+                    )
                 viewMeasureType =
                     getInteger(R.styleable.CheckersGridView_view_size, 0)
             } finally {
@@ -237,9 +307,27 @@ class CheckersGridView(
                     drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor2)
                     drawCircle(cx, cy, playerRadius * scale, paintPlayerColor2)
                 }
-                PlayerNum.NOPLAYER -> {
+                PlayerNum.NOPLAYER, null -> {
                     // Do not draw
                 }
+            }
+
+            if (entry.pieceType == PieceType.KING) {
+                val d = resources.getDrawable(R.drawable.ic_king, null)
+                when (entry.player) {
+                    PlayerNum.NOPLAYER, null -> return
+                    PlayerNum.FIRST -> d.setTint(playerOutlineColor1)
+                    PlayerNum.SECOND -> d.setTint(playerOutlineColor2)
+                }
+
+                d.setBounds(
+                    (cx - playerRadiusIcon * scale).roundToInt(),
+                    (cy - playerRadiusIcon * scale).roundToInt(),
+                    (cx + playerRadiusIcon * scale).roundToInt(),
+                    (cy + playerRadiusIcon * scale).roundToInt()
+                )
+
+                d.draw(canvas)
             }
         }
     }
@@ -331,7 +419,8 @@ class CheckersGridView(
     private fun updateDimensions() {
         singleCellSize = viewWidth.toFloat() / gridData.size
         playerRadius = singleCellSize * playerSize * 0.5F
-        playerRadiusOutline = singleCellSize * playerOutlineSize * 0.5F
+        playerRadiusOutline = singleCellSize * playerSize * playerOutlineSize * 0.5F
+        playerRadiusIcon = singleCellSize * playerSize * playerIconSize * 0.5F
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -348,26 +437,36 @@ class CheckersGridView(
                 }
             }
 
-            movingEntry?.let { entry ->
+            movingEntry?.let { srcEntry ->
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 if (userInteracting) {
-                    drawGridEntry(
-                        this, dstEntry,
-                        if (gridData.moveAllowed(entry, dstEntry))
-                            paintGridColorMoveAllowed else paintGridColorMoveForbidden
-                    )
+                    // TODO: Replace with `getAllowedMoves` when that method is created
+                    val allowedEntries = gridData.calculateAllowedMoves(srcEntry, false)
+                    allowedEntries?.forEach {
+                        drawGridEntry(this, it, paintGridColorMoveAllowedHint)
+                    }
+
+                    if (dstEntry != movingEntry) {
+                        drawGridEntry(
+                            this, dstEntry,
+                            if (gridData.moveAllowed(srcEntry, dstEntry))
+                                paintGridColorMoveAllowed else paintGridColorMoveForbidden
+                        )
+                    }
+
+                    drawGridEntry(this, srcEntry, paintGridColorMoveSource)
 
                     val cx = (dstEntry.x + 0.5F) * singleCellSize
                     val cy = (dstEntry.y + 0.5F) * singleCellSize
-                    if (dstEntry != entry) {
+                    if (dstEntry != srcEntry) {
                         drawPlayer(this, dstEntry, cx, cy)
                     }
                 }
 
-                drawPlayer(this, entry, moveX, moveY, playerScaleCurrent)
+                drawPlayer(this, srcEntry, moveX, moveY, playerScaleCurrent)
             }
         }
     }
@@ -432,7 +531,6 @@ class CheckersGridView(
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                userInteracting = false
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
@@ -440,7 +538,10 @@ class CheckersGridView(
                 moveOffsetX = 0F
                 moveOffsetY = 0F
 
+                userInteracting = false
                 val srcEntry = movingEntry ?: return false
+                userInteractionEnabled = false
+
                 movingEntry?.let { gridEntry ->
                     val entry =
                         if (gridData.moveAllowed(gridEntry, dstEntry)) dstEntry else gridEntry
@@ -470,10 +571,6 @@ class CheckersGridView(
                             })
 
                         addListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationStart(animation: Animator?) {
-                                userInteractionEnabled = false
-                            }
-
                             override fun onAnimationEnd(animation: Animator) {
                                 userInteractionEnabled = true
                                 movingEntry = null
@@ -481,7 +578,7 @@ class CheckersGridView(
                                 moveX = 0F
                                 returnAnimatorSet = null
 
-                                moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, dstEntry)
+                                moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
                                 invalidate()
                             }
                         })
@@ -510,7 +607,7 @@ class CheckersGridView(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
-        val size = when(viewMeasureType) {
+        val size = when (viewMeasureType) {
             0 -> {
                 if (width > height) height else width
             }
