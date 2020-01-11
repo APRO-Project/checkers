@@ -7,7 +7,6 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -33,18 +32,35 @@ class CheckersGridView(
             paintGridColorMoveAllowed.color = value
             invalidate()
         }
+
+    var gridColorMoveAllowedHint: Int = 0
+        set(value) {
+            field = value
+            paintGridColorMoveAllowedHint.color = value
+            invalidate()
+        }
+
     var gridColorMoveForbidden: Int = 0
         set(value) {
             field = value
             paintGridColorMoveForbidden.color = value
             invalidate()
         }
+
+    var gridColorMoveSource: Int = 0
+        set(value) {
+            field = value
+            paintGridColorMoveSource.color = value
+            invalidate()
+        }
+
     var gridColorLegal: Int = 0
         set(value) {
             field = value
             paintGridColorLegal.color = value
             invalidate()
         }
+
     var girdColorIllegal: Int = 0
         set(value) {
             field = value
@@ -58,6 +74,7 @@ class CheckersGridView(
             paintPlayerColor1.color = value
             invalidate()
         }
+
     var playerColor2: Int = 0
         set(value) {
             field = value
@@ -71,6 +88,7 @@ class CheckersGridView(
             paintPlayerOutlineColor1.color = value
             invalidate()
         }
+
     var playerOutlineColor2: Int = 0
         set(value) {
             field = value
@@ -83,8 +101,18 @@ class CheckersGridView(
         style = Paint.Style.FILL
     }
 
+    private val paintGridColorMoveAllowedHint = Paint(0).apply {
+        color = gridColorMoveAllowedHint
+        style = Paint.Style.FILL
+    }
+
     private val paintGridColorMoveForbidden = Paint(0).apply {
         color = gridColorMoveForbidden
+        style = Paint.Style.FILL
+    }
+
+    private val paintGridColorMoveSource = Paint(0).apply {
+        color = gridColorMoveSource
         style = Paint.Style.FILL
     }
 
@@ -173,13 +201,23 @@ class CheckersGridView(
             try {
                 gridColorMoveAllowed =
                     getColor(
-                        R.styleable.CheckersGridView_grid_color_legal,
-                        context.getColor(R.color.game_color_grid_move_forbidden)
+                        R.styleable.CheckersGridView_grid_color_move_allowed,
+                        context.getColor(R.color.game_color_grid_move_allowed)
+                    )
+                gridColorMoveAllowedHint =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_move_allowed_hint,
+                        context.getColor(R.color.game_color_grid_move_allowed_hint)
                     )
                 gridColorMoveForbidden =
                     getColor(
-                        R.styleable.CheckersGridView_grid_color_legal,
-                        context.getColor(R.color.game_color_grid_move_allowed)
+                        R.styleable.CheckersGridView_grid_color_move_forbidden,
+                        context.getColor(R.color.game_color_grid_move_forbidden)
+                    )
+                gridColorMoveSource =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_move_source,
+                        context.getColor(R.color.game_color_grid_move_source)
                     )
                 gridColorLegal =
                     getColor(
@@ -361,26 +399,36 @@ class CheckersGridView(
                 }
             }
 
-            movingEntry?.let { entry ->
+            movingEntry?.let { srcEntry ->
                 val x = (moveX / singleCellSize).toInt()
                 val y = (moveY / singleCellSize).toInt()
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 if (userInteracting) {
-                    drawGridEntry(
-                        this, dstEntry,
-                        if (gridData.moveAllowed(entry, dstEntry))
-                            paintGridColorMoveAllowed else paintGridColorMoveForbidden
-                    )
+                    // TODO: Replace with `getAllowedMoves` when that method is created
+                    val allowedEntries = gridData.calculateAllowedMoves(srcEntry, false)
+                    allowedEntries?.forEach {
+                        drawGridEntry(this, it, paintGridColorMoveAllowedHint)
+                    }
+
+                    if (dstEntry != movingEntry) {
+                        drawGridEntry(
+                            this, dstEntry,
+                            if (gridData.moveAllowed(srcEntry, dstEntry))
+                                paintGridColorMoveAllowed else paintGridColorMoveForbidden
+                        )
+                    }
+
+                    drawGridEntry(this, srcEntry, paintGridColorMoveSource)
 
                     val cx = (dstEntry.x + 0.5F) * singleCellSize
                     val cy = (dstEntry.y + 0.5F) * singleCellSize
-                    if (dstEntry != entry) {
+                    if (dstEntry != srcEntry) {
                         drawPlayer(this, dstEntry, cx, cy)
                     }
                 }
 
-                drawPlayer(this, entry, moveX, moveY, playerScaleCurrent)
+                drawPlayer(this, srcEntry, moveX, moveY, playerScaleCurrent)
             }
         }
     }
