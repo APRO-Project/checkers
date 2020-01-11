@@ -48,11 +48,11 @@ class GameActivity : AppCompatActivity() {
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
                     val src: GridEntry = grid.filter {
-                        it.player == PlayerNum.FIRST
+                        it.player == PlayerNum.FIRST && grid.calculateAllowedMoves(it, false).isNotEmpty()
                     }.random()
 
                     val dst: GridEntry = grid.filter {
-                        it != src && gridData.moveAllowed(src, it)
+                        it != src && gridData.calculateAllowedMoves(src, false).contains(it)
                     }.random()
 
                     checkersGridView.allowSecondPlayerMove = false
