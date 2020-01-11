@@ -11,7 +11,7 @@ public class GridEntry {
     private PlayerNum player = PlayerNum.NOPLAYER;
     private PieceType pieceType = PieceType.UNASSIGNED;
     private HashSet<GridEntry> allowedMovesCache = null;
-    private CaptureTree allowedCapturesCache = null;
+    private CaptureChain allowedCapturesCache = null;
 
     public int getY() {
         return y;
@@ -45,11 +45,11 @@ public class GridEntry {
         this.allowedMovesCache = allowedMovesCache;
     }
 
-    public CaptureTree getAllowedCapturesCache() {
+    public CaptureChain getAllowedCapturesCache() {
         return allowedCapturesCache;
     }
 
-    public void setAllowedCapturesCache(CaptureTree allowedCapturesCache) {
+    public void setAllowedCapturesCache(CaptureChain allowedCapturesCache) {
         this.allowedCapturesCache = allowedCapturesCache;
     }
 

@@ -1,8 +1,6 @@
 package com.cyberbot.checkers.game;
 
 import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.cyberbot.checkers.preferences.Preferences;
@@ -89,6 +87,7 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean moveAllowed(GridEntry src, GridEntry dst) {
+        calculateAllowedCaptures(src, false);
         return src == dst || calculateAllowedMoves(src, false).contains(dst);
     }
 
@@ -180,5 +179,41 @@ public class Grid implements Iterable<GridEntry> {
         if(storeInCache) entry.setAllowedMovesCache(allowedMoves);
 
         return allowedMoves;
+    }
+
+    public CaptureChain calculateAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
+        CaptureChain root = new CaptureChain(entry, null, null);
+        capture(root);
+
+        if(storeInCache) entry.setAllowedCapturesCache(root);
+
+        if(!root.getNextCaptures().isEmpty())
+            System.out.println("There are possible captures!!!");
+
+        return root;
+    }
+
+    private void capture(CaptureChain lastCapture) {
+        GridEntry lastLocation = lastCapture.getLocationAfterCapture();
+        for(GridEntry adjEntry: getAdjacentEntries(lastLocation)) {
+            if(adjEntry.getPlayer() != PlayerNum.NOPLAYER
+                    && adjEntry.getPlayer() != lastLocation.getPlayer()
+                    && !lastCapture.checkIfEntryCaptured(adjEntry)) {
+                int entryAfterX = adjEntry.getX() + (adjEntry.getX() - lastLocation.getX());
+                int entryAfterY = adjEntry.getY() + (adjEntry.getY() - lastLocation.getY());
+
+                if(entryAfterX >= 0 && entryAfterX < size
+                        && entryAfterY >= 0 && entryAfterY < size) {
+                    GridEntry entryAfter = getEntryByCoords(entryAfterX, entryAfterY);
+
+                    if(entryAfter.getPlayer() == PlayerNum.NOPLAYER
+                            && !lastCapture.checkIfEntryVisited(entryAfter)) {
+                        CaptureChain nextCapture = new CaptureChain(entryAfter, adjEntry, lastCapture);
+                        lastCapture.addNextCapture(nextCapture);
+                        capture(nextCapture);
+                    }
+                }
+            }
+        }
     }
 }
