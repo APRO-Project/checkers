@@ -25,11 +25,6 @@ class CheckersGridView(
     context: Context,
     attrs: AttributeSet?
 ) : View(context, attrs) {
-    companion object {
-        val COLOR_DEFAULT_GRID = Color.rgb(0.5F, 0.5F, 0.5F)
-        val COLOR_DEFAULT_DROP_ALLOWED = Color.rgb(118, 230, 62)
-        val COLOR_DEFAULT_DROP_FORBIDDEN = Color.rgb(230, 62, 62)
-    }
 
     // <editor-fold defaultstate="collapsed" desc="Colors and paint">
     var gridColorMoveAllowed: Int = 0
@@ -179,23 +174,41 @@ class CheckersGridView(
                 gridColorMoveAllowed =
                     getColor(
                         R.styleable.CheckersGridView_grid_color_legal,
-                        COLOR_DEFAULT_DROP_ALLOWED
+                        context.getColor(R.color.game_color_grid_move_forbidden)
                     )
                 gridColorMoveForbidden =
                     getColor(
                         R.styleable.CheckersGridView_grid_color_legal,
-                        COLOR_DEFAULT_DROP_FORBIDDEN
+                        context.getColor(R.color.game_color_grid_move_allowed)
                     )
                 gridColorLegal =
-                    getColor(R.styleable.CheckersGridView_grid_color_legal, COLOR_DEFAULT_GRID)
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_legal,
+                        context.getColor(R.color.game_color_grid_default_legal)
+                    )
                 girdColorIllegal =
-                    getColor(R.styleable.CheckersGridView_grid_color_illegal, Color.WHITE)
-                playerColor1 = getColor(R.styleable.CheckersGridView_player_color1, Color.WHITE)
-                playerColor2 = getColor(R.styleable.CheckersGridView_player_color2, Color.BLACK)
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_illegal,
+                        context.getColor(R.color.game_color_grid_default_illegal)
+                    )
+                playerColor1 = getColor(
+                    R.styleable.CheckersGridView_player_color1,
+                    context.getColor(R.color.game_color_player1)
+                )
+                playerColor2 = getColor(
+                    R.styleable.CheckersGridView_player_color2,
+                    context.getColor(R.color.game_color_player2)
+                )
                 playerOutlineColor1 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.BLACK)
+                    getColor(
+                        R.styleable.CheckersGridView_player_outline_color1,
+                        context.getColor(R.color.game_color_player_outline1)
+                    )
                 playerOutlineColor2 =
-                    getColor(R.styleable.CheckersGridView_player_outline_color1, Color.WHITE)
+                    getColor(
+                        R.styleable.CheckersGridView_player_outline_color1,
+                        context.getColor(R.color.game_color_player_outline2)
+                    )
                 viewMeasureType =
                     getInteger(R.styleable.CheckersGridView_view_size, 0)
             } finally {
@@ -237,7 +250,7 @@ class CheckersGridView(
                     drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor2)
                     drawCircle(cx, cy, playerRadius * scale, paintPlayerColor2)
                 }
-                PlayerNum.NOPLAYER -> {
+                PlayerNum.NOPLAYER, null -> {
                     // Do not draw
                 }
             }
@@ -510,7 +523,7 @@ class CheckersGridView(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
-        val size = when(viewMeasureType) {
+        val size = when (viewMeasureType) {
             0 -> {
                 if (width > height) height else width
             }
