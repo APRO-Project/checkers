@@ -3,8 +3,8 @@ package com.cyberbot.checkers.game;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Queue;
 
 public class GridEntry {
     private final int x;
@@ -12,7 +12,7 @@ public class GridEntry {
     private PlayerNum player = PlayerNum.NOPLAYER;
     private PieceType pieceType = PieceType.UNASSIGNED;
     private HashSet<GridEntry> allowedMovesCache = null;
-    private HashSet<Queue<GridEntry>> allowedCapturesCache = null;
+    private ArrayList<CaptureChain> allowedCapturesCache = null;
 
     public int getY() {
         return y;
@@ -46,11 +46,11 @@ public class GridEntry {
         this.allowedMovesCache = allowedMovesCache;
     }
 
-    public HashSet<Queue<GridEntry>> getAllowedCapturesCache() {
+    public ArrayList<CaptureChain> getAllowedCapturesCache() {
         return allowedCapturesCache;
     }
 
-    public void setAllowedCapturesCache(HashSet<Queue<GridEntry>> allowedCapturesCache) {
+    public void setAllowedCapturesCache(ArrayList<CaptureChain> allowedCapturesCache) {
         this.allowedCapturesCache = allowedCapturesCache;
     }
 

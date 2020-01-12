@@ -48,7 +48,7 @@ class GameActivity : AppCompatActivity() {
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
                     val src: GridEntry = grid.filter {
-                        it.player == PlayerNum.FIRST && grid.calculateAllowedMoves(it, false).isNotEmpty()
+                        it.player == PlayerNum.FIRST && grid.getAllowedMoves(it, false).isNotEmpty()
                     }.random()
 
                     val dst: GridEntry = grid.filter {
