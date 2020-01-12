@@ -19,4 +19,6 @@
     <string name="settings_can_move_backward">Can move backward</string>
     <string name="settings_can_capture_backward">Can capture backward</string>
     <string name="settings_flying_king">Flying king</string>
+    <string name="game_player_move_in_progress">Moving</string>
+    <string name="game_ai_thinking">Thinking</string>
 </resources>
