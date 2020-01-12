@@ -87,7 +87,15 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean moveAllowed(GridEntry src, GridEntry dst) {
-        return src == dst || getAllowedMoves(src, true).contains(dst);
+        if(src == dst) return true;
+
+        ArrayList<CaptureChain> allowedCaptures = getAllowedCaptures(src, true);
+        if(!allowedCaptures.isEmpty()) {
+            return allowedCaptures.stream().anyMatch(
+                    (capture) -> capture.getLocationAfterCapture() == dst
+            );
+        }
+        else return getAllowedMoves(src, true).contains(dst);
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
@@ -195,7 +203,7 @@ public class Grid implements Iterable<GridEntry> {
         return allowedMoves;
     }
 
-    public CaptureChain getAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
+    public ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
         if(entry.getAllowedCapturesCache() != null) return entry.getAllowedCapturesCache();
 
         CaptureChain root = new CaptureChain(entry, null, null);
@@ -207,9 +215,11 @@ public class Grid implements Iterable<GridEntry> {
             // TODO: Calculate king captures
         }
 
-        if(storeInCache) entry.setAllowedCapturesCache(root);
+        ArrayList<CaptureChain> longestCaptures = root.getLongestCaptures();
 
-        return root;
+        if(storeInCache) entry.setAllowedCapturesCache(longestCaptures);
+
+        return longestCaptures;
     }
 
     private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture, final PlayerNum player) {
