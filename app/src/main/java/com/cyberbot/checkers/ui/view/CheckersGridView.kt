@@ -443,7 +443,6 @@ class CheckersGridView(
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 if (userInteracting) {
-                    // TODO: Replace with `getAllowedMoves` when that method is created
                     val allowedEntries = gridData.getAllowedMoves(srcEntry, false)
                     allowedEntries?.forEach {
                         drawGridEntry(this, it, paintGridColorMoveAllowedHint)
