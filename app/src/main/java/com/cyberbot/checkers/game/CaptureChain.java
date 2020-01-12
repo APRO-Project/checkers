@@ -3,13 +3,12 @@ package com.cyberbot.checkers.game;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CaptureChain {
     private final CaptureChain lastCapture;
     private final GridEntry locationAfterCapture;
     private final GridEntry capturedPiece;
+    private final Integer captureLength;
     private final ArrayList<CaptureChain> nextCaptures;
 
     public CaptureChain getLastCapture() {
@@ -32,15 +31,28 @@ public class CaptureChain {
         nextCaptures.add(capture);
     }
 
+    private boolean isCaptureRoot() {
+        return capturedPiece == null && lastCapture == null;
+    }
+
+    private boolean isCaptureEndpoint() {
+        return !isCaptureRoot() && nextCaptures.isEmpty();
+    }
+
     CaptureChain(GridEntry locationAfterCapture, GridEntry capturedPiece, CaptureChain lastCapture) {
         this.locationAfterCapture = locationAfterCapture;
         this.capturedPiece = capturedPiece;
         this.lastCapture = lastCapture;
         nextCaptures = new ArrayList<>();
+
+        if(lastCapture == null) captureLength = 0;
+        else captureLength = lastCapture.captureLength + 1;
     }
 
     public boolean checkIfEntryCaptured(GridEntry entry) {
-        if(capturedPiece == entry) return true;
+        if(!isCaptureRoot()) {
+            throw new RuntimeException("Attempt to search for captured entry not from capture root");
+        }
 
         for(CaptureChain prevCapture = lastCapture; prevCapture != null; prevCapture = prevCapture.lastCapture) {
             if(prevCapture.capturedPiece == entry) return true;
@@ -49,32 +61,41 @@ public class CaptureChain {
         return false;
     }
 
-    private void getCaptureFinalPositions(@NotNull HashMap<CaptureChain, Integer> output, int captureLength) {
-        if(nextCaptures.isEmpty() && lastCapture != null) output.put(this, captureLength);
+    private void getCaptureEndpoints(@NotNull ArrayList<CaptureChain> output) {
+        if(isCaptureEndpoint()) output.add(this);
         for(CaptureChain nextCapture: nextCaptures) {
-            nextCapture.getCaptureFinalPositions(output, captureLength+1);
+            nextCapture.getCaptureEndpoints(output);
         }
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public ArrayList<CaptureChain> getLongestCaptures() {
+        if(!isCaptureRoot()) {
+            throw new RuntimeException("Attempt to get longest captures not from capture root");
+        }
+
         ArrayList<CaptureChain> longestCaptures = new ArrayList<>();
 
-        HashMap<CaptureChain, Integer> finalPositions = new HashMap<>();
-        getCaptureFinalPositions(finalPositions, 0);
+        ArrayList<CaptureChain> endpoints = new ArrayList<>();
+        getCaptureEndpoints(endpoints);
 
-        if(finalPositions.isEmpty()) return longestCaptures;
+        if(endpoints.isEmpty()) return longestCaptures;  // Empty list
 
-        final int longestCaptureLength = finalPositions.values().stream().max(Integer::compareTo).get();
+        final int longestCaptureLength = endpoints.stream().max(
+                (a, b) -> a.captureLength.compareTo(b.captureLength)
+        ).get().captureLength;
 
-        for(Map.Entry<CaptureChain, Integer> finalPosition: finalPositions.entrySet()) {
-            if(finalPosition.getValue() == longestCaptureLength) longestCaptures.add(finalPosition.getKey());
+        for(CaptureChain finalPosition: endpoints) {
+            if(finalPosition.captureLength == longestCaptureLength) longestCaptures.add(finalPosition);
         }
 
         return longestCaptures;
     }
 
     public ArrayList<GridEntry> getCapturedPieces() {
+        if(!isCaptureEndpoint()) {
+            throw new RuntimeException("Attempt to get captured pieces not from capture endpoint");
+        }
+
         ArrayList<GridEntry> capturedPieces = new ArrayList<>();
         for(CaptureChain capture = this; capture.lastCapture != null; capture = capture.lastCapture) {
             capturedPieces.add(capture.capturedPiece);
