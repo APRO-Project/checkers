@@ -34,7 +34,7 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public Grid(int size, int playerRows) {
-        if(size - (playerRows * 2) < 2) {
+        if (size - (playerRows * 2) < 2) {
             throw new IllegalArgumentException("There should be 2 no-player rows on the board at minimum");
         }
 
@@ -42,15 +42,14 @@ public class Grid implements Iterable<GridEntry> {
         this.playerRows = playerRows;
         gridEntries = new ArrayList<>();
 
-        for(int i = 0; i < size*size; ++i) {
+        for (int i = 0; i < size * size; ++i) {
             int y = i / size;
             GridEntry entry = new GridEntry(i % size, y);
 
-            if(y < playerRows && entry.legal()) {
+            if (y < playerRows && entry.legal()) {
                 entry.setPlayer(PlayerNum.FIRST);
                 entry.setPieceType(PieceType.ORDINARY);
-            }
-            else if(y >= size - playerRows && entry.legal()) {
+            } else if (y >= size - playerRows && entry.legal()) {
                 entry.setPlayer(PlayerNum.SECOND);
                 entry.setPieceType(PieceType.ORDINARY);
             }
@@ -77,12 +76,12 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public GridEntry getEntryByCoords(int x, int y) throws IndexOutOfBoundsException {
-        if(x >= size || y >= size) {
+        if (x >= size || y >= size) {
             throw new IndexOutOfBoundsException("Coordinates (" + x + ", " + y + ") out of bounds for grid with size " + size);
         }
 
-        for(GridEntry e: gridEntries) {
-            if(e.getX() == x && e.getY() == y) return e;
+        for (GridEntry e : gridEntries) {
+            if (e.getX() == x && e.getY() == y) return e;
         }
 
         throw new RuntimeException("Entry (" + x + ", " + y + ") not found in Grid");
@@ -93,12 +92,12 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
-        if(dst == src || !moveAllowed(src, dst)) return false;
+        if (dst == src || !moveAllowed(src, dst)) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
 
-        if(srcIdx == -1 || dstIdx == -1) {
+        if (srcIdx == -1 || dstIdx == -1) {
             throw new RuntimeException("GridEntry destination or source not part of the Grid");
         }
 
@@ -127,39 +126,39 @@ public class Grid implements Iterable<GridEntry> {
         final int y = entry.getY();
 
         // Bottom corner
-        if(x == 0 && y == size-1) {
-            adjacentEntries.add(getEntryByCoords(1, size-2));
+        if (x == 0 && y == size - 1) {
+            adjacentEntries.add(getEntryByCoords(1, size - 2));
         }
         // Upper corner
-        else if(y == 0 && x == size-1) {
-            adjacentEntries.add(getEntryByCoords(size-2, 1));
+        else if (y == 0 && x == size - 1) {
+            adjacentEntries.add(getEntryByCoords(size - 2, 1));
         }
         // Upper edge
-        else if(x == 0) {
-            adjacentEntries.add(getEntryByCoords(1, y-1));
-            adjacentEntries.add(getEntryByCoords(1, y+1));
+        else if (x == 0) {
+            adjacentEntries.add(getEntryByCoords(1, y - 1));
+            adjacentEntries.add(getEntryByCoords(1, y + 1));
         }
         // Left edge
-        else if(y == 0) {
-            adjacentEntries.add(getEntryByCoords(x-1, 1));
-            adjacentEntries.add(getEntryByCoords(x+1, 1));
+        else if (y == 0) {
+            adjacentEntries.add(getEntryByCoords(x - 1, 1));
+            adjacentEntries.add(getEntryByCoords(x + 1, 1));
         }
         // Bottom edge
-        else if(x == size-1) {
-            adjacentEntries.add(getEntryByCoords(x-1, y-1));
-            adjacentEntries.add(getEntryByCoords(x-1, y+1));
+        else if (x == size - 1) {
+            adjacentEntries.add(getEntryByCoords(x - 1, y - 1));
+            adjacentEntries.add(getEntryByCoords(x - 1, y + 1));
         }
         // Right edge
-        else if(y == size-1) {
-            adjacentEntries.add(getEntryByCoords(x-1, y-1));
-            adjacentEntries.add(getEntryByCoords(x+1, y-1));
+        else if (y == size - 1) {
+            adjacentEntries.add(getEntryByCoords(x - 1, y - 1));
+            adjacentEntries.add(getEntryByCoords(x + 1, y - 1));
         }
         // Mid entries
         else {
-            adjacentEntries.add(getEntryByCoords(x-1, y-1));
-            adjacentEntries.add(getEntryByCoords(x-1, y+1));
-            adjacentEntries.add(getEntryByCoords(x+1, y-1));
-            adjacentEntries.add(getEntryByCoords(x+1, y+1));
+            adjacentEntries.add(getEntryByCoords(x - 1, y - 1));
+            adjacentEntries.add(getEntryByCoords(x - 1, y + 1));
+            adjacentEntries.add(getEntryByCoords(x + 1, y - 1));
+            adjacentEntries.add(getEntryByCoords(x + 1, y + 1));
         }
 
         return adjacentEntries;
@@ -167,9 +166,9 @@ public class Grid implements Iterable<GridEntry> {
 
     public HashSet<GridEntry> calculateAllowedMoves(@NotNull GridEntry entry, boolean storeInCache) {
         HashSet<GridEntry> allowedMoves = new HashSet<>();
-        for(GridEntry adjEntry: getAdjacentEntries(entry)) {
-            if(adjEntry.getPlayer() == PlayerNum.NOPLAYER) {
-                if(canMoveBackwards
+        for (GridEntry adjEntry : getAdjacentEntries(entry)) {
+            if (adjEntry.getPlayer() == PlayerNum.NOPLAYER) {
+                if (canMoveBackwards
                         || (entry.getPlayer() == PlayerNum.FIRST && entry.getY() < adjEntry.getY())
                         || (entry.getPlayer() == PlayerNum.SECOND && entry.getY() > adjEntry.getY())) {
                     allowedMoves.add(adjEntry);
@@ -177,8 +176,59 @@ public class Grid implements Iterable<GridEntry> {
             }
         }
 
-        if(storeInCache) entry.setAllowedMovesCache(allowedMoves);
+        if (storeInCache) entry.setAllowedMovesCache(allowedMoves);
 
         return allowedMoves;
+    }
+
+    int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
+        int value = 0;
+        for (GridEntry gridEntry : gridEntries) {
+            if (gridEntry.getPlayer() == playerNum) {
+
+                //count pieces
+
+                value += 10;
+
+                if (gridEntry.getPieceType() == PieceType.KING){
+                    value += 30;
+                }
+
+                //prioritize sides
+
+                value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+
+                //prioritize forward
+
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value += gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value += Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
+            } else if (gridEntry.getPlayer() == adversaryNum) {
+
+                //count pieces
+
+                value -= 10;
+
+                if (gridEntry.getPieceType() == PieceType.KING){
+                    value -= 30;
+                }
+
+                //prioritize sides
+
+                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+
+                //prioritize forward
+
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value -= gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
+            }
+        }
+
+        return value;
     }
 }
