@@ -23,6 +23,10 @@ public class CaptureChain {
         return capturedPiece;
     }
 
+    public Integer getCaptureLength() {
+        return captureLength;
+    }
+
     public ArrayList<CaptureChain> getNextCaptures() {
         return nextCaptures;
     }
@@ -50,11 +54,7 @@ public class CaptureChain {
     }
 
     public boolean checkIfEntryCaptured(GridEntry entry) {
-        if(!isCaptureRoot()) {
-            throw new RuntimeException("Attempt to search for captured entry not from capture root");
-        }
-
-        for(CaptureChain prevCapture = lastCapture; prevCapture != null; prevCapture = prevCapture.lastCapture) {
+        for(CaptureChain prevCapture = this; prevCapture != null; prevCapture = prevCapture.lastCapture) {
             if(prevCapture.capturedPiece == entry) return true;
         }
 
@@ -66,6 +66,17 @@ public class CaptureChain {
         for(CaptureChain nextCapture: nextCaptures) {
             nextCapture.getCaptureEndpoints(output);
         }
+    }
+
+    public CaptureChain getCaptureRoot() {
+        if(isCaptureRoot()) return this;
+
+        CaptureChain previousCapture = this;
+        while(!previousCapture.isCaptureRoot()) {
+            previousCapture = previousCapture.lastCapture;
+        }
+
+        return previousCapture;
     }
 
     public ArrayList<CaptureChain> getLongestCaptures() {
