@@ -1,5 +1,7 @@
 package com.cyberbot.checkers.game;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class CaptureChain {
@@ -35,16 +37,6 @@ public class CaptureChain {
         nextCaptures = new ArrayList<>();
     }
 
-    public boolean checkIfEntryVisited(GridEntry entry) {
-        if(getLocationAfterCapture() == entry) return true;
-
-        for(CaptureChain prevCapture = getLastCapture(); prevCapture != null; prevCapture = prevCapture.getLastCapture()) {
-            if(prevCapture.getLocationAfterCapture() == entry) return true;
-        }
-
-        return false;
-    }
-
     public boolean checkIfEntryCaptured(GridEntry entry) {
         if(getCapturedPiece() == entry) return true;
 
@@ -53,5 +45,12 @@ public class CaptureChain {
         }
 
         return false;
+    }
+
+    public void getCaptureFinalPositions(@NotNull ArrayList<CaptureChain> output) {
+        if(nextCaptures.isEmpty() && lastCapture != null) output.add(this);
+        for(CaptureChain nextCapture: nextCaptures) {
+            nextCapture.getCaptureFinalPositions(output);
+        }
     }
 }
