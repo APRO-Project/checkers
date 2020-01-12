@@ -97,7 +97,30 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
-        if(src == dst || !(moveAllowed(src, dst) || captureAllowed(src, dst))) return false;
+        if(src == dst) return false;
+
+        boolean isMoveAllowed = moveAllowed(src, dst);
+        boolean isCaptureAllowed = captureAllowed(src, dst);
+        if(!(isMoveAllowed || isCaptureAllowed)) return false;
+
+        // TODO: Check if mandatory captures option is set
+        if(isCaptureAllowed) {
+            System.out.println("Capture is allowed:");
+            for(CaptureChain capture: src.getAllowedCapturesCache()) {
+                GridEntry location = capture.getLocationAfterCapture();
+                System.out.print("-> To entry (" + location.getX() + ", " + location.getY() + ") --- Captured pieces: [");
+                for(GridEntry piece: capture.getCapturedPieces()) {
+                    System.out.print(" (" + piece.getX() + ", " + piece.getY() + ")");
+                }
+                System.out.println();
+            }
+        }
+        else {
+            System.out.println("Move is allowed:");
+            for(GridEntry entry: src.getAllowedMovesCache()) {
+                System.out.println("-> To entry (" + entry.getX() + ", " + entry.getY() + ")");
+            }
+        }
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);

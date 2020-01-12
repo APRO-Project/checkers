@@ -40,10 +40,10 @@ public class CaptureChain {
     }
 
     public boolean checkIfEntryCaptured(GridEntry entry) {
-        if(getCapturedPiece() == entry) return true;
+        if(capturedPiece == entry) return true;
 
-        for(CaptureChain prevCapture = getLastCapture(); prevCapture != null; prevCapture = prevCapture.getLastCapture()) {
-            if(prevCapture.getCapturedPiece() == entry) return true;
+        for(CaptureChain prevCapture = lastCapture; prevCapture != null; prevCapture = prevCapture.lastCapture) {
+            if(prevCapture.capturedPiece == entry) return true;
         }
 
         return false;
@@ -72,5 +72,14 @@ public class CaptureChain {
         }
 
         return longestCaptures;
+    }
+
+    public ArrayList<GridEntry> getCapturedPieces() {
+        ArrayList<GridEntry> capturedPieces = new ArrayList<>();
+        for(CaptureChain capture = this; capture.lastCapture != null; capture = capture.lastCapture) {
+            capturedPieces.add(capture.capturedPiece);
+        }
+
+        return capturedPieces;
     }
 }
