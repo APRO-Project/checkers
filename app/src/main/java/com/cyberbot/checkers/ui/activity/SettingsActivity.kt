@@ -19,9 +19,23 @@ class SettingsActivity : AppCompatActivity() {
         settingsGridPreview.allowFirstPlayerMove = false
         settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
 
+        settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
+        settingsAutoCaptureSwitch.isChecked = prefs.autoCapture
+        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
         settingsCaptureBackwardSwitch.isChecked = prefs.canCaptureBackwards
         settingsMoveBackwardSwitch.isChecked = prefs.canMoveBackwards
         settingsFlyingKingSwitch.isChecked = prefs.flyingKing
+
+        settingsMandatoryCapturesSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.mandatoryCapture = isChecked
+            settingsAutoCaptureSwitch.isEnabled = isChecked
+            prefs.save(this)
+        }
+
+        settingsAutoCaptureSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.autoCapture = isChecked
+            prefs.save(this)
+        }
 
         settingsCaptureBackwardSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.canCaptureBackwards = isChecked

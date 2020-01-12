@@ -7,6 +7,8 @@
     <string name="preference_file_key">main_preferences</string>
     <string name="preference_grid_size">grid_size</string>
     <string name="preference_player_rows">player_rows</string>
+    <string name="preference_mandatory_capture">mandatory_capture</string>
+    <string name="preference_auto_capture">auto_capture</string>
     <string name="preference_can_move_backwards">can_move_backwards</string>
     <string name="preference_can_capture_backwards">can_capture_backwards</string>
     <string name="preference_flying_king">flying_king</string>
@@ -21,4 +23,6 @@
     <string name="settings_flying_king">Flying king</string>
     <string name="game_player_move_in_progress">Moving</string>
     <string name="game_ai_thinking">Thinking</string>
+    <string name="settings_mandatory_captures">Mandatory captures</string>
+    <string name="settings_auto_capture">Auto capture</string>
 </resources>
