@@ -87,19 +87,17 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public boolean moveAllowed(GridEntry src, GridEntry dst) {
-        if(src == dst) return true;
+        return (src == dst) || getAllowedMoves(src, true).contains(dst);
+    }
 
-        ArrayList<CaptureChain> allowedCaptures = getAllowedCaptures(src, true);
-        if(!allowedCaptures.isEmpty()) {
-            return allowedCaptures.stream().anyMatch(
-                    (capture) -> capture.getLocationAfterCapture() == dst
-            );
-        }
-        else return getAllowedMoves(src, true).contains(dst);
+    public boolean captureAllowed(GridEntry src, GridEntry dst) {
+        return getAllowedCaptures(src, true).stream().anyMatch(
+                (capture) -> capture.getLocationAfterCapture() == dst
+        );
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
-        if(dst == src || !moveAllowed(src, dst)) return false;
+        if(src == dst || !(moveAllowed(src, dst) || captureAllowed(src, dst))) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
