@@ -276,4 +276,38 @@ public class Grid implements Iterable<GridEntry> {
             }
         }
     }
+
+    public ArrayList<GridEntry> getMovableEntries(PlayerNum player) {
+        ArrayList<GridEntry> movablePieces = new ArrayList<>();
+
+        ArrayList<CaptureChain> captures = new ArrayList<>();
+
+        // Check for captures first
+        for(GridEntry entry: gridEntries) {
+            if(entry.getPlayer() == player) {
+                captures.addAll(getAllowedCaptures(entry, true));
+            }
+        }
+
+        if(captures.isEmpty()) {
+            for(GridEntry entry: gridEntries) {
+                if(entry.getPlayer() == player && !getAllowedMoves(entry, true).isEmpty()) {
+                    movablePieces.add(entry);
+                }
+            }
+        }
+        else {
+            final int longestCaptureLength = captures.stream().max(
+                    (a, b) -> a.getCaptureLength().compareTo(b.getCaptureLength())
+            ).get().getCaptureLength();
+
+            for(CaptureChain capture: captures) {
+                if(capture.getCaptureLength() == longestCaptureLength) {
+                    movablePieces.add(capture.getCaptureRoot().getLocationAfterCapture());
+                }
+            }
+        }
+
+        return movablePieces;
+    }
 }
