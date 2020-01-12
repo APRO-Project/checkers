@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Move {
     private GridEntry start;
     private GridEntry end;
-    private ArrayList<GridEntry> killedInAction;
+    private ArrayList<GridEntry> killedInAction;//Propably wont be used
 
     public Move(GridEntry start, GridEntry end) {
         this.start = start;
