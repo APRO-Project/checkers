@@ -3,6 +3,8 @@ package com.cyberbot.checkers.game;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CaptureChain {
     private final CaptureChain lastCapture;
@@ -47,10 +49,28 @@ public class CaptureChain {
         return false;
     }
 
-    public void getCaptureFinalPositions(@NotNull ArrayList<CaptureChain> output) {
-        if(nextCaptures.isEmpty() && lastCapture != null) output.add(this);
+    private void getCaptureFinalPositions(@NotNull HashMap<CaptureChain, Integer> output, int captureLength) {
+        if(nextCaptures.isEmpty() && lastCapture != null) output.put(this, captureLength);
         for(CaptureChain nextCapture: nextCaptures) {
-            nextCapture.getCaptureFinalPositions(output);
+            nextCapture.getCaptureFinalPositions(output, captureLength+1);
         }
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public ArrayList<CaptureChain> getLongestCaptures() {
+        ArrayList<CaptureChain> longestCaptures = new ArrayList<>();
+
+        HashMap<CaptureChain, Integer> finalPositions = new HashMap<>();
+        getCaptureFinalPositions(finalPositions, 0);
+
+        if(finalPositions.isEmpty()) return longestCaptures;
+
+        final int longestCaptureLength = finalPositions.values().stream().max(Integer::compareTo).get();
+
+        for(Map.Entry<CaptureChain, Integer> finalPosition: finalPositions.entrySet()) {
+            if(finalPosition.getValue() == longestCaptureLength) longestCaptures.add(finalPosition.getKey());
+        }
+
+        return longestCaptures;
     }
 }
