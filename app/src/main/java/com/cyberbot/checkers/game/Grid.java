@@ -201,7 +201,7 @@ public class Grid implements Iterable<GridEntry> {
         CaptureChain root = new CaptureChain(entry, null, null);
 
         if(entry.getPieceType() == PieceType.ORDINARY) {
-            calculateOrdinaryPieceCaptures(root);
+            calculateOrdinaryPieceCaptures(root, entry.getPlayer());
         }
         else if(entry.getPieceType() == PieceType.KING) {
             // TODO: Calculate king captures
@@ -212,25 +212,34 @@ public class Grid implements Iterable<GridEntry> {
         return root;
     }
 
-    private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture) {
+    private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture, final PlayerNum player) {
         GridEntry lastLocation = lastCapture.getLocationAfterCapture();
 
         for(GridEntry adjEntry: getAdjacentEntries(lastLocation)) {
-            if(adjEntry.getPlayer() != PlayerNum.NOPLAYER
-                    && adjEntry.getPlayer() != lastLocation.getPlayer()
-                    && !lastCapture.checkIfEntryCaptured(adjEntry)) {
-                int entryAfterX = adjEntry.getX() + (adjEntry.getX() - lastLocation.getX());
-                int entryAfterY = adjEntry.getY() + (adjEntry.getY() - lastLocation.getY());
+            // Check if can capture backwards or adjacent piece is ahead
+            if(canCaptureBackwards
+                    || (lastLocation.getPlayer() == PlayerNum.FIRST && lastLocation.getY() < adjEntry.getY())
+                    || (lastLocation.getPlayer() == PlayerNum.SECOND && lastLocation.getY() > adjEntry.getY())) {
 
-                if(entryAfterX >= 0 && entryAfterX < size
-                        && entryAfterY >= 0 && entryAfterY < size) {
-                    GridEntry entryAfter = getEntryByCoords(entryAfterX, entryAfterY);
+                // Check if adjacent piece belongs to other player and wasn't captured yet
+                if (adjEntry.getPlayer() != PlayerNum.NOPLAYER
+                        && adjEntry.getPlayer() != player
+                        && !lastCapture.checkIfEntryCaptured(adjEntry)) {
 
-                    if(entryAfter.getPlayer() == PlayerNum.NOPLAYER
-                            && !lastCapture.checkIfEntryVisited(entryAfter)) {
-                        CaptureChain nextCapture = new CaptureChain(entryAfter, adjEntry, lastCapture);
-                        lastCapture.addNextCapture(nextCapture);
-                        calculateOrdinaryPieceCaptures(nextCapture);
+                    int entryAfterX = adjEntry.getX() + (adjEntry.getX() - lastLocation.getX());
+                    int entryAfterY = adjEntry.getY() + (adjEntry.getY() - lastLocation.getY());
+
+                    // Check if entry after captured piece is on the Grid
+                    if (entryAfterX >= 0 && entryAfterX < size
+                            && entryAfterY >= 0 && entryAfterY < size) {
+
+                        GridEntry entryAfter = getEntryByCoords(entryAfterX, entryAfterY);
+                        // Check if entry after captured piece belongs to nobody
+                        if (entryAfter.getPlayer() == PlayerNum.NOPLAYER) {
+                            CaptureChain nextCapture = new CaptureChain(entryAfter, adjEntry, lastCapture);
+                            lastCapture.addNextCapture(nextCapture);
+                            calculateOrdinaryPieceCaptures(nextCapture, player);
+                        }
                     }
                 }
             }
