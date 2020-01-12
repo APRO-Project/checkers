@@ -11,19 +11,28 @@ public class AiPlayer {
         this.aiNum = aiNum;
     }
 
-    public Move getAiMove (Grid currentGrid){
-        Tree minmaxTree = generateMinmaxTree(currentGrid);
-        return pickMove(minmaxTree);
-    }
+    public Move getAiMove(Grid currentGrid) {
+        Move bestMove = null;
+        int topValue = -1000;
+        ArrayList<Move> possibleMoves;   //TODO
+        for (Move move : possibleMoves) {
+            Grid simulated = Grid.simulateMove(currentGrid, move);
 
-    private Move pickMove(Tree minmaxTree) {
-        return null;//TODO
-    }
+            ArrayList<Move> possibleSecondMoves;   //TODO
+            for (Move move2 : possibleSecondMoves) {
+                Grid simulated2 = Grid.simulateMove(simulated, move2);
 
-    private Tree generateMinmaxTree(Grid currentGrid) {
-        Tree root = new Tree(currentGrid, currentGrid.getValue(aiNum, adversaryNum), null);
-        ArrayList<Move> possibleMoves;
-        //TODO
-        return root;
+                ArrayList<Move> possibleThirdMoves;   //TODO
+                for (Move move3 : possibleThirdMoves) {
+                    Grid simulated3 = Grid.simulateMove(simulated2, move3);
+
+                    if (simulated3.getValue(aiNum, adversaryNum) > topValue) {
+                        topValue = simulated3.getValue(aiNum, adversaryNum);
+                        bestMove = move;
+                    }
+                }
+            }
+        }
+        return bestMove;
     }
 }

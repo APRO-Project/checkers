@@ -190,7 +190,7 @@ public class Grid implements Iterable<GridEntry> {
 
                 value += 10;
 
-                if (gridEntry.getPieceType() == PieceType.KING){
+                if (gridEntry.getPieceType() == PieceType.KING) {
                     value += 30;
                 }
 
@@ -211,7 +211,7 @@ public class Grid implements Iterable<GridEntry> {
 
                 value -= 10;
 
-                if (gridEntry.getPieceType() == PieceType.KING){
+                if (gridEntry.getPieceType() == PieceType.KING) {
                     value -= 30;
                 }
 
@@ -230,5 +230,10 @@ public class Grid implements Iterable<GridEntry> {
         }
 
         return value;
+    }
+
+    public static Grid simulateMove(Grid grid, Move move) {
+        grid.attemptMove(move.getStart(), move.getEnd());
+        return grid;
     }
 }
