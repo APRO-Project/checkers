@@ -24,6 +24,7 @@ class GameActivity : AppCompatActivity() {
         val pref = Preferences.fromContext(this)
         val gridData = Grid.fromPreferences(pref)
         checkersGridView.gridData = gridData
+        checkersGridView.playerTurn = PlayerNum.SECOND
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
@@ -47,15 +48,13 @@ class GameActivity : AppCompatActivity() {
 
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
-                    val src: GridEntry = grid.filter {
-                        it.player == PlayerNum.FIRST && grid.getAllowedMoves(it, false).isNotEmpty()
-                    }.random()
+                    val src: GridEntry = grid.getMovableEntries(PlayerNum.FIRST).keys.random()
 
                     val dst: GridEntry = grid.filter {
-                        it != src && gridData.moveAllowed(src, it)
+                        it != src && gridData.destinationAllowed(src, it)
                     }.random()
 
-                    checkersGridView.allowSecondPlayerMove = false
+                    checkersGridView.playerTurn = PlayerNum.NOPLAYER
                     move_player2.text = getString(R.string.game_ai_thinking)
                     Thread {
                         play(this@GameActivity, getRandomAiThinkSoundRes())
@@ -63,7 +62,7 @@ class GameActivity : AppCompatActivity() {
                         runOnUiThread {
                             checkersGridView.attemptMove(src, dst)
                         }
-                        checkersGridView.allowSecondPlayerMove = true
+                        checkersGridView.playerTurn = PlayerNum.SECOND
                     }.start()
                 }
             }

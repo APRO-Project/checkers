@@ -157,8 +157,7 @@ class CheckersGridView(
     private var playerRadiusIcon: Float = 0F
     private var userInteractionEnabled = true
 
-    var allowFirstPlayerMove = false
-    var allowSecondPlayerMove = true
+    var playerTurn = PlayerNum.NOPLAYER
 
     var moveAttemptListener: MoveAttemptListener? = null
 
@@ -333,7 +332,7 @@ class CheckersGridView(
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
-        if (!gridData.moveAllowed(srcEntry, dstEntry)) {
+        if (!gridData.destinationAllowed(srcEntry, dstEntry)) {
             return false
         }
 
@@ -409,11 +408,7 @@ class CheckersGridView(
     }
 
     private fun playerMoveAllowed(player: PlayerNum): Boolean {
-        return when (player) {
-            PlayerNum.NOPLAYER -> false
-            PlayerNum.FIRST -> allowFirstPlayerMove
-            PlayerNum.SECOND -> allowSecondPlayerMove
-        }
+        return player != PlayerNum.NOPLAYER && player == playerTurn
     }
 
     private fun updateDimensions() {
@@ -443,15 +438,15 @@ class CheckersGridView(
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 if (userInteracting) {
-                    val allowedEntries = gridData.getAllowedMoves(srcEntry, false)
-                    allowedEntries?.forEach {
-                        drawGridEntry(this, it, paintGridColorMoveAllowedHint)
+                    val allowedEntries = gridData.getMovableEntries(playerTurn)
+                    allowedEntries[movingEntry]?.forEach {
+                        drawGridEntry(this, it.destinationEntry, paintGridColorMoveAllowedHint)
                     }
 
                     if (dstEntry != movingEntry) {
                         drawGridEntry(
                             this, dstEntry,
-                            if (gridData.moveAllowed(srcEntry, dstEntry))
+                            if (gridData.destinationAllowed(srcEntry, dstEntry))
                                 paintGridColorMoveAllowed else paintGridColorMoveForbidden
                         )
                     }
@@ -543,7 +538,12 @@ class CheckersGridView(
 
                 movingEntry?.let { gridEntry ->
                     val entry =
-                        if (gridData.moveAllowed(gridEntry, dstEntry)) dstEntry else gridEntry
+                        if (gridData.destinationAllowed(gridEntry, dstEntry)) {
+                            dstEntry
+                        } else {
+                            gridEntry
+                        }
+
                     val dstX = (entry.x + 0.5F) * singleCellSize
                     val dstY = (entry.y + 0.5F) * singleCellSize
 
