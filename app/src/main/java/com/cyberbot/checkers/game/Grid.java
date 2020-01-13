@@ -6,18 +6,22 @@ import org.jetbrains.annotations.NotNull;
 import com.cyberbot.checkers.preferences.Preferences;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 public class Grid implements Iterable<GridEntry> {
     private final int size;
     private final int playerRows;
     private final ArrayList<GridEntry> gridEntries;
+    private HashMap<GridEntry, ArrayList<Destination>> movableEntriesCache;
 
     // Preferences
     private boolean canMoveBackwards = false;
     private boolean canCaptureBackwards = true;
     private boolean flyingKing = true;
+    private boolean mandatoryCapture = true;
 
     public int getSize() {
         return size;
@@ -39,6 +43,7 @@ public class Grid implements Iterable<GridEntry> {
         this.size = size;
         this.playerRows = playerRows;
         gridEntries = new ArrayList<>();
+        movableEntriesCache = null;
 
         for(int i = 0; i < size*size; ++i) {
             int y = i / size;
@@ -57,11 +62,12 @@ public class Grid implements Iterable<GridEntry> {
         }
     }
 
-    public Grid(int size, int playerRows, boolean canMoveBackwards, boolean canCaptureBackwards, boolean flyingKing) {
+    public Grid(int size, int playerRows, boolean canMoveBackwards, boolean canCaptureBackwards, boolean flyingKing, boolean mandatoryCapture) {
         this(size, playerRows);
         this.canMoveBackwards = canMoveBackwards;
         this.canCaptureBackwards = canCaptureBackwards;
         this.flyingKing = flyingKing;
+        this.mandatoryCapture = mandatoryCapture;
     }
 
     public static Grid fromPreferences(@NotNull Preferences prefs) {
@@ -70,7 +76,8 @@ public class Grid implements Iterable<GridEntry> {
                 prefs.getPlayerRows(),
                 prefs.getCanMoveBackwards(),
                 prefs.getCanCaptureBackwards(),
-                prefs.getFlyingKing()
+                prefs.getFlyingKing(),
+                prefs.getMandatoryCapture()
         );
     }
 
@@ -86,41 +93,25 @@ public class Grid implements Iterable<GridEntry> {
         throw new RuntimeException("Entry (" + x + ", " + y + ") not found in Grid");
     }
 
-    public boolean moveAllowed(GridEntry src, GridEntry dst) {
-        return (src == dst) || getAllowedMoves(src, true).contains(dst);
-    }
+    public boolean destinationAllowed(GridEntry src, GridEntry dst) {
+        if(src == dst) return true;
 
-    public boolean captureAllowed(GridEntry src, GridEntry dst) {
-        return getAllowedCaptures(src, true).stream().anyMatch(
-                (capture) -> capture.getLocationAfterCapture() == dst
-        );
+        getMovableEntries(src.getPlayer());
+
+        ArrayList<Destination> destinations = movableEntriesCache.get(src);
+        if(destinations == null) return false;
+
+        for(Destination destination: destinations) {
+            if(destination.getDestinationEntry() == dst) return true;
+        }
+
+        return false;
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
         if(src == dst) return false;
 
-        boolean isMoveAllowed = moveAllowed(src, dst);
-        boolean isCaptureAllowed = captureAllowed(src, dst);
-        if(!(isMoveAllowed || isCaptureAllowed)) return false;
-
-        // TODO: Check if mandatory captures option is set
-        if(isCaptureAllowed) {
-            System.out.println("Capture is allowed:");
-            for(CaptureChain capture: src.getAllowedCapturesCache()) {
-                GridEntry location = capture.getLocationAfterCapture();
-                System.out.print("-> To entry (" + location.getX() + ", " + location.getY() + ") --- Captured pieces: [");
-                for(GridEntry piece: capture.getCapturedPieces()) {
-                    System.out.print(" (" + piece.getX() + ", " + piece.getY() + ")");
-                }
-                System.out.println();
-            }
-        }
-        else {
-            System.out.println("Move is allowed:");
-            for(GridEntry entry: src.getAllowedMovesCache()) {
-                System.out.println("-> To entry (" + entry.getX() + ", " + entry.getY() + ")");
-            }
-        }
+        if(!destinationAllowed(src, dst)) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
@@ -135,7 +126,7 @@ public class Grid implements Iterable<GridEntry> {
         gridEntries.get(srcIdx).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(srcIdx).setPieceType(PieceType.UNASSIGNED);
 
-        gridEntries.forEach(GridEntry::clearCache);
+        movableEntriesCache = null;
 
         return true;
     }
@@ -192,9 +183,7 @@ public class Grid implements Iterable<GridEntry> {
         return adjacentEntries;
     }
 
-    public HashSet<GridEntry> getAllowedMoves(@NotNull GridEntry entry, boolean storeInCache) {
-        if(entry.getAllowedMovesCache() != null) return entry.getAllowedMovesCache();
-
+    private HashSet<GridEntry> getAllowedMoves(@NotNull GridEntry entry) {
         HashSet<GridEntry> allowedMoves = new HashSet<>();
 
         if(entry.getPieceType() == PieceType.ORDINARY) {
@@ -203,8 +192,6 @@ public class Grid implements Iterable<GridEntry> {
         else if(entry.getPieceType() == PieceType.KING) {
             // TODO: Calculate king moves
         }
-
-        if(storeInCache) entry.setAllowedMovesCache(allowedMoves);
 
         return allowedMoves;
     }
@@ -224,9 +211,7 @@ public class Grid implements Iterable<GridEntry> {
         return allowedMoves;
     }
 
-    public ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry, boolean storeInCache) {
-        if(entry.getAllowedCapturesCache() != null) return entry.getAllowedCapturesCache();
-
+    private ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry) {
         CaptureChain root = new CaptureChain(entry, null, null);
 
         if(entry.getPieceType() == PieceType.ORDINARY) {
@@ -236,11 +221,12 @@ public class Grid implements Iterable<GridEntry> {
             // TODO: Calculate king captures
         }
 
-        ArrayList<CaptureChain> longestCaptures = root.getLongestCaptures();
+        ArrayList<CaptureChain> allowedCaptures;
 
-        if(storeInCache) entry.setAllowedCapturesCache(longestCaptures);
+        if(mandatoryCapture) allowedCaptures = root.getLongestCaptures();
+        else allowedCaptures = root.getAllCaptures();
 
-        return longestCaptures;
+        return allowedCaptures;
     }
 
     private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture, final PlayerNum player) {
@@ -277,37 +263,68 @@ public class Grid implements Iterable<GridEntry> {
         }
     }
 
-    public ArrayList<GridEntry> getMovableEntries(PlayerNum player) {
-        ArrayList<GridEntry> movablePieces = new ArrayList<>();
+    public HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player) {
+        if(movableEntriesCache != null) return movableEntriesCache;
 
-        ArrayList<CaptureChain> captures = new ArrayList<>();
+        HashMap<GridEntry, ArrayList<Destination>> movableEntries = new HashMap<>();
+        HashMap<GridEntry, ArrayList<CaptureChain>> possibleCaptures = new HashMap<>();
+        int longestCaptureLength = 1;
 
         // Check for captures first
         for(GridEntry entry: gridEntries) {
             if(entry.getPlayer() == player) {
-                captures.addAll(getAllowedCaptures(entry, true));
+                ArrayList<CaptureChain> allowedCaptures = getAllowedCaptures(entry);
+                if(!allowedCaptures.isEmpty()) {
+                    possibleCaptures.put(entry, getAllowedCaptures(entry));
+                    for(CaptureChain capture: allowedCaptures) {
+                        if(capture.getCaptureLength() > longestCaptureLength) {
+                            longestCaptureLength = capture.getCaptureLength();
+                        }
+                    }
+                }
             }
         }
 
-        if(captures.isEmpty()) {
+        // Add moves if captures aren't mandatory
+        if(!mandatoryCapture || possibleCaptures.isEmpty()) {
             for(GridEntry entry: gridEntries) {
-                if(entry.getPlayer() == player && !getAllowedMoves(entry, true).isEmpty()) {
-                    movablePieces.add(entry);
-                }
-            }
-        }
-        else {
-            final int longestCaptureLength = captures.stream().max(
-                    (a, b) -> a.getCaptureLength().compareTo(b.getCaptureLength())
-            ).get().getCaptureLength();
+                if(entry.getPlayer() == player) {
+                    HashSet<GridEntry> allowedMoves = getAllowedMoves(entry);
+                    if(!allowedMoves.isEmpty()) {
+                        ArrayList<Destination> destinations = new ArrayList<>();
+                        for(GridEntry destination: allowedMoves) {
+                            destinations.add(new Destination(destination));
+                        }
 
-            for(CaptureChain capture: captures) {
-                if(capture.getCaptureLength() == longestCaptureLength) {
-                    movablePieces.add(capture.getCaptureRoot().getLocationAfterCapture());
+                        movableEntries.put(entry, destinations);
+                    }
                 }
             }
         }
 
-        return movablePieces;
+        // Add captures
+        if(!possibleCaptures.isEmpty()) {
+            for(Map.Entry<GridEntry, ArrayList<CaptureChain>> possibleCapture: possibleCaptures.entrySet()) {
+                ArrayList<Destination> destinations = new ArrayList<>();
+                for(CaptureChain capture: possibleCapture.getValue()){
+                    if(!mandatoryCapture || capture.getCaptureLength() == longestCaptureLength) {
+                        destinations.add(new Destination(capture));
+                    }
+                }
+
+                if(!destinations.isEmpty()) {
+                    if(!movableEntries.containsKey(possibleCapture.getKey())) {
+                        movableEntries.put(possibleCapture.getKey(), destinations);
+                    }
+                    else {
+                        movableEntries.get(possibleCapture.getKey()).addAll(destinations);
+                    }
+                }
+            }
+        }
+
+        movableEntriesCache = movableEntries;
+
+        return movableEntries;
     }
 }

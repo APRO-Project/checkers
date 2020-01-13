@@ -120,7 +120,7 @@ class GridTest {
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
 
-        assertFalse(grid.moveAllowed(srcEntry, dstEntry));
+        assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
 
     @ParameterizedTest
@@ -131,7 +131,7 @@ class GridTest {
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
 
-        assertFalse(grid.moveAllowed(srcEntry, dstEntry));
+        assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
 
     @ParameterizedTest
@@ -142,7 +142,7 @@ class GridTest {
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
 
-        assertTrue(grid.moveAllowed(srcEntry, dstEntry));
+        assertTrue(grid.destinationAllowed(srcEntry, dstEntry));
     }
 
     /**

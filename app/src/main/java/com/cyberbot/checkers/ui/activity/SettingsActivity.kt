@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
+import com.cyberbot.checkers.game.PlayerNum
 import com.cyberbot.checkers.preferences.Preferences
 import kotlinx.android.synthetic.main.activity_settings.*
 
@@ -15,8 +16,7 @@ class SettingsActivity : AppCompatActivity() {
         title = getString(R.string.game_options)
 
         val prefs = Preferences.fromContext(this)
-        settingsGridPreview.allowSecondPlayerMove = false
-        settingsGridPreview.allowFirstPlayerMove = false
+        settingsGridPreview.playerTurn = PlayerNum.NOPLAYER
         settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
 
         settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
