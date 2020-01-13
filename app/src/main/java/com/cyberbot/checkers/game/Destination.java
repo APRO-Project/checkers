@@ -25,8 +25,6 @@ public class Destination {
         return capturedPieces != null && capturedPieces.size() > 0;
     }
 
-
-
     public ArrayList<GridEntry> getCapturedPieces() {
         return capturedPieces;
     }
