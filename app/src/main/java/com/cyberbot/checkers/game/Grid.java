@@ -263,20 +263,20 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player) {
-        if(movableEntriesCache != null) return movableEntriesCache;
+        if (movableEntriesCache != null) return movableEntriesCache;
 
         HashMap<GridEntry, ArrayList<Destination>> movableEntries = new HashMap<>();
         HashMap<GridEntry, ArrayList<CaptureChain>> possibleCaptures = new HashMap<>();
         int longestCaptureLength = 1;
 
         // Check for captures first
-        for(GridEntry entry: gridEntries) {
-            if(entry.getPlayer() == player) {
+        for (GridEntry entry : gridEntries) {
+            if (entry.getPlayer() == player) {
                 ArrayList<CaptureChain> allowedCaptures = getAllowedCaptures(entry);
-                if(!allowedCaptures.isEmpty()) {
+                if (!allowedCaptures.isEmpty()) {
                     possibleCaptures.put(entry, getAllowedCaptures(entry));
-                    for(CaptureChain capture: allowedCaptures) {
-                        if(capture.getCaptureLength() > longestCaptureLength) {
+                    for (CaptureChain capture : allowedCaptures) {
+                        if (capture.getCaptureLength() > longestCaptureLength) {
                             longestCaptureLength = capture.getCaptureLength();
                         }
                     }
@@ -285,13 +285,13 @@ public class Grid implements Iterable<GridEntry> {
         }
 
         // Add moves if captures aren't mandatory
-        if(!mandatoryCapture || possibleCaptures.isEmpty()) {
-            for(GridEntry entry: gridEntries) {
-                if(entry.getPlayer() == player) {
+        if (!mandatoryCapture || possibleCaptures.isEmpty()) {
+            for (GridEntry entry : gridEntries) {
+                if (entry.getPlayer() == player) {
                     HashSet<GridEntry> allowedMoves = getAllowedMoves(entry);
-                    if(!allowedMoves.isEmpty()) {
+                    if (!allowedMoves.isEmpty()) {
                         ArrayList<Destination> destinations = new ArrayList<>();
-                        for(GridEntry destination: allowedMoves) {
+                        for (GridEntry destination : allowedMoves) {
                             destinations.add(new Destination(destination));
                         }
 
@@ -302,28 +302,28 @@ public class Grid implements Iterable<GridEntry> {
         }
 
         // Add captures
-        if(!possibleCaptures.isEmpty()) {
-            for(Map.Entry<GridEntry, ArrayList<CaptureChain>> possibleCapture: possibleCaptures.entrySet()) {
+        if (!possibleCaptures.isEmpty()) {
+            for (Map.Entry<GridEntry, ArrayList<CaptureChain>> possibleCapture : possibleCaptures.entrySet()) {
                 ArrayList<Destination> destinations = new ArrayList<>();
-                for(CaptureChain capture: possibleCapture.getValue()){
-                    if(!mandatoryCapture || capture.getCaptureLength() == longestCaptureLength) {
+                for (CaptureChain capture : possibleCapture.getValue()) {
+                    if (!mandatoryCapture || capture.getCaptureLength() == longestCaptureLength) {
                         destinations.add(new Destination(capture));
                     }
                 }
 
-                if(!destinations.isEmpty()) {
-                    if(!movableEntries.containsKey(possibleCapture.getKey())) {
+                if (!destinations.isEmpty()) {
+                    if (!movableEntries.containsKey(possibleCapture.getKey())) {
                         movableEntries.put(possibleCapture.getKey(), destinations);
-                    }
-                    else {
+                    } else {
                         movableEntries.get(possibleCapture.getKey()).addAll(destinations);
                     }
                 }
-                movableEntriesCache = movableEntries;
-
-                return movableEntries;
             }
         }
+        movableEntriesCache = movableEntries;
+
+        return movableEntries;
+    }
 
       int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
         int value = 0;
@@ -369,10 +369,13 @@ public class Grid implements Iterable<GridEntry> {
                     value -= gridEntry.getY() / 2;
                 } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
                     value -= Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
+            }
+        }
         return value;
     }
 
-    public static Grid simulateMove(Grid grid, Move move) {
+    static Grid simulateMove(Grid grid, Move move) {
         grid.attemptMove(move.getStart(), move.getEnd());
         return grid;
     }
