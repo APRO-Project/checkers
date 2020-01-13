@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '*'
+      - 'fix/*'
+      - 'tools/*'
       - 'feature/*'
       - '!master'
       - '!release*'

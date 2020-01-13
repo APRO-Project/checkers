@@ -9,13 +9,24 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
+import androidx.core.graphics.withTranslation
 import com.cyberbot.checkers.R
+import com.cyberbot.checkers.fx.Sound
+import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PieceType
 import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.ui.animator.FullMoveAnimator
+import com.cyberbot.checkers.ui.animator.PieceAnimator
+import com.cyberbot.checkers.ui.animator.MoveScaleAnimator
+import com.cyberbot.checkers.ui.animator.ScaleAnimator
 import java.lang.Float.max
 import java.lang.Float.min
 import kotlin.math.roundToInt
@@ -38,6 +49,13 @@ class CheckersGridView(
         set(value) {
             field = value
             paintGridColorMoveAllowedHint.color = value
+            invalidate()
+        }
+
+    var gridColorCaptureAllowedHint: Int = 0
+        set(value) {
+            field = value
+            paintGridColorCaptureAllowedHint.color = value
             invalidate()
         }
 
@@ -107,6 +125,11 @@ class CheckersGridView(
         style = Paint.Style.FILL
     }
 
+    private val paintGridColorCaptureAllowedHint = Paint(0).apply {
+        color = gridColorCaptureAllowedHint
+        style = Paint.Style.FILL
+    }
+
     private val paintGridColorMoveForbidden = Paint(0).apply {
         color = gridColorMoveForbidden
         style = Paint.Style.FILL
@@ -157,8 +180,8 @@ class CheckersGridView(
     private var playerRadiusIcon: Float = 0F
     private var userInteractionEnabled = true
 
-    var allowFirstPlayerMove = false
-    var allowSecondPlayerMove = true
+    var soundFxEnabled = true
+    var playerTurn = PlayerNum.NOPLAYER
 
     var moveAttemptListener: MoveAttemptListener? = null
 
@@ -203,13 +226,17 @@ class CheckersGridView(
         }
 
     private var userInteracting = false
-    private var playerScaleCurrent = 1F
     private var movingEntry: GridEntry? = null
     private var moveOffsetX = 0F
     private var moveOffsetY = 0F
     private var moveX = 0F
     private var moveY = 0F
-    private var returnAnimatorSet: AnimatorSet? = null
+
+    private var canvasOffsetX = 0F
+    private var canvasOffsetY = 0F
+
+    private var currentPieceAnimator: PieceAnimator? = null
+    private var currentAnimator: Animator? = null
 
     init {
         context.theme.obtainStyledAttributes(
@@ -227,6 +254,11 @@ class CheckersGridView(
                     getColor(
                         R.styleable.CheckersGridView_grid_color_move_allowed_hint,
                         context.getColor(R.color.game_color_grid_move_allowed_hint)
+                    )
+                gridColorCaptureAllowedHint =
+                    getColor(
+                        R.styleable.CheckersGridView_grid_color_capture_allowed_hint,
+                        context.getColor(R.color.game_color_grid_capture_allowed_hint)
                     )
                 gridColorMoveForbidden =
                     getColor(
@@ -333,87 +365,39 @@ class CheckersGridView(
     }
 
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
-        if (!gridData.moveAllowed(srcEntry, dstEntry)) {
+        if (!gridData.destinationAllowed(srcEntry, dstEntry)) {
             return false
         }
 
-        val srcX = ((srcEntry.x) + 0.5F) * singleCellSize
-        val srcY = ((srcEntry.y) + 0.5F) * singleCellSize
+        currentPieceAnimator = FullMoveAnimator(singleCellSize).apply {
+            addPiece(srcEntry, dstEntry, 1F, playerScaleMoving)
+            addUpdateListener { _, v ->
+                invalidate()
+                Log.d("FullMoveAnimator", v.toString())
+            }
 
-        val dstX = ((dstEntry.x) + 0.5F) * singleCellSize
-        val dstY = ((dstEntry.y) + 0.5F) * singleCellSize
-
-        moveX = srcX
-        moveY = srcY
-
-        movingEntry = srcEntry
-
-        AnimatorSet().apply {
-            playSequentially(
-                ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
-                    addUpdateListener {
-                        playerScaleCurrent = it.animatedValue as Float
-                        invalidate()
-                    }
-
-                    duration = artificialAnimationDuration
-                },
-                AnimatorSet().apply {
-                    playTogether(ValueAnimator.ofFloat(srcX, dstX).apply {
-                        addUpdateListener {
-                            moveX = it.animatedValue as Float
-                            invalidate()
-                        }
-                    }, ValueAnimator.ofFloat(srcY, dstY).apply {
-                        addUpdateListener {
-                            moveY = it.animatedValue as Float
-                            invalidate()
-                        }
-                    })
-
-                    duration = artificialAnimationDuration
-                },
-                ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
-                    addUpdateListener {
-                        playerScaleCurrent = it.animatedValue as Float
-                        invalidate()
-                    }
-
-                    duration = artificialAnimationDuration
-                })
-
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    userInteractionEnabled = false
-
+            currentAnimator = createAnimator().apply {
+                doOnStart {
+                    if(soundFxEnabled) Sound.playSound(context, SoundType.MOVE)
                     moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
                 }
 
-                override fun onAnimationEnd(animation: Animator) {
-                    userInteractionEnabled = true
-                    movingEntry = null
-                    moveY = 0F
-                    moveX = 0F
+                doOnEnd {
+                    currentPieceAnimator = null
+                    currentAnimator = null
 
                     moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
-
-                    invalidate()
                 }
-            })
 
-            duration = artificialAnimationDuration
-            start()
+                duration = artificialAnimationDuration
+                start()
+            }
         }
-
         return true
     }
 
     private fun playerMoveAllowed(player: PlayerNum): Boolean {
-        return when (player) {
-            PlayerNum.NOPLAYER -> false
-            PlayerNum.FIRST -> allowFirstPlayerMove
-            PlayerNum.SECOND -> allowSecondPlayerMove
-        }
+        return player != PlayerNum.NOPLAYER && player == playerTurn
     }
 
     private fun updateDimensions() {
@@ -426,14 +410,16 @@ class CheckersGridView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        canvas.apply {
+        canvas.withTranslation(30F, 30F) {
             gridData.forEach {
                 drawGridEntry(this, it)
 
-                if (it != movingEntry) {
-                    val cx = (it.x + 0.5F) * singleCellSize
-                    val cy = (it.y + 0.5F) * singleCellSize
-                    drawPlayer(this, it, cx, cy)
+                currentPieceAnimator.let { animator ->
+                    if (animator == null || !animator.animatedPieces.containsKey(it)) {
+                        val cx = (it.x + 0.5F) * singleCellSize
+                        val cy = (it.y + 0.5F) * singleCellSize
+                        drawPlayer(this, it, cx, cy)
+                    }
                 }
             }
 
@@ -443,16 +429,19 @@ class CheckersGridView(
                 val dstEntry = gridData.getEntryByCoords(x, y)
 
                 if (userInteracting) {
-                    // TODO: Replace with `getAllowedMoves` when that method is created
-                    val allowedEntries = gridData.calculateAllowedMoves(srcEntry, false)
-                    allowedEntries?.forEach {
-                        drawGridEntry(this, it, paintGridColorMoveAllowedHint)
+                    val allowedEntries = gridData.getMovableEntries(playerTurn)
+                    allowedEntries[movingEntry]?.forEach {
+                        drawGridEntry(
+                            this, it.destinationEntry,
+                            if (it.isCapture) paintGridColorCaptureAllowedHint
+                            else paintGridColorMoveAllowedHint
+                        )
                     }
 
                     if (dstEntry != movingEntry) {
                         drawGridEntry(
                             this, dstEntry,
-                            if (gridData.moveAllowed(srcEntry, dstEntry))
+                            if (gridData.destinationAllowed(srcEntry, dstEntry))
                                 paintGridColorMoveAllowed else paintGridColorMoveForbidden
                         )
                     }
@@ -465,8 +454,22 @@ class CheckersGridView(
                         drawPlayer(this, dstEntry, cx, cy)
                     }
                 }
+            }
 
-                drawPlayer(this, srcEntry, moveX, moveY, playerScaleCurrent)
+            currentPieceAnimator.let { animator ->
+                if (animator !== null) {
+                    animator.animatedPieces.forEach { (e, v) ->
+                        if (e == movingEntry) {
+                            drawPlayer(this, e, moveX, moveY, v.scale)
+                        } else {
+                            drawPlayer(this, e, v.x, v.y, v.scale)
+                        }
+                    }
+                } else {
+                    movingEntry?.let {
+                        drawPlayer(this, it, moveX, moveY, playerScaleMoving)
+                    }
+                }
             }
         }
     }
@@ -482,9 +485,10 @@ class CheckersGridView(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 userInteracting = true
-                returnAnimatorSet?.let {
+                currentAnimator?.let {
                     it.cancel()
-                    returnAnimatorSet = null
+                    currentPieceAnimator = null
+                    currentAnimator = null
                 }
 
                 val x = (event.x / singleCellSize).toInt()
@@ -506,19 +510,24 @@ class CheckersGridView(
                 moveY = cy
 
                 if (movingEntry == null) {
-                    ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
-                        addUpdateListener {
-                            playerScaleCurrent = it.animatedValue as Float
+                    currentPieceAnimator = ScaleAnimator(singleCellSize).apply {
+                        addPiece(entry, 1F, playerScaleMoving)
+                        addUpdateListener { _, _ ->
                             invalidate()
                         }
 
-                        duration = riseAnimationDuration
-                        start()
+                        currentAnimator = createAnimator().apply {
+                            doOnEnd {
+                                currentAnimator = null
+                            }
+
+                            duration = riseAnimationDuration
+                            start()
+                        }
                     }
                 }
 
                 movingEntry = entry
-
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -527,7 +536,6 @@ class CheckersGridView(
                 moveY = max(min(event.y - moveOffsetY, viewWidth.toFloat() - 1), 0F)
 
                 invalidate()
-
                 return true
             }
             MotionEvent.ACTION_UP -> {
@@ -544,47 +552,41 @@ class CheckersGridView(
 
                 movingEntry?.let { gridEntry ->
                     val entry =
-                        if (gridData.moveAllowed(gridEntry, dstEntry)) dstEntry else gridEntry
+                        if (gridData.destinationAllowed(gridEntry, dstEntry)) {
+                            dstEntry
+                        } else {
+                            gridEntry
+                        }
+
                     val dstX = (entry.x + 0.5F) * singleCellSize
                     val dstY = (entry.y + 0.5F) * singleCellSize
 
                     val srcX = moveX
                     val srcY = moveY
 
-                    returnAnimatorSet = AnimatorSet().apply {
-                        playTogether(
-                            ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
-                                addUpdateListener {
-                                    playerScaleCurrent = it.animatedValue as Float
-                                    invalidate()
-                                }
-                            },
-                            ValueAnimator.ofFloat(srcX, dstX).apply {
-                                addUpdateListener {
-                                    moveX = it.animatedValue as Float
-                                }
-                            },
-                            ValueAnimator.ofFloat(srcY, dstY).apply {
-                                addUpdateListener {
-                                    moveY = it.animatedValue as Float
-                                }
-                            })
+                    userInteractionEnabled = true
+                    movingEntry = null
+                    moveY = 0F
+                    moveX = 0F
 
-                        addListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                userInteractionEnabled = true
-                                movingEntry = null
-                                moveY = 0F
-                                moveX = 0F
-                                returnAnimatorSet = null
+                    currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
+                        addPiece(gridEntry, srcX, srcY, playerScaleMoving, dstX, dstY, 1F)
+                        addUpdateListener { _, _ ->
+                            invalidate()
+                        }
+
+                        currentAnimator = createAnimator().apply {
+                            doOnEnd {
+                                currentAnimator = null
+                                currentPieceAnimator = null
 
                                 moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
                                 invalidate()
                             }
-                        })
 
-                        duration = returnAnimationDuration
-                        start()
+                            duration = returnAnimationDuration
+                            start()
+                        }
                     }
                 }
 

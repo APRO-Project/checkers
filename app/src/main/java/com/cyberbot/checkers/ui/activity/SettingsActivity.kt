@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
+import com.cyberbot.checkers.game.PlayerNum
 import com.cyberbot.checkers.preferences.Preferences
 import kotlinx.android.synthetic.main.activity_settings.*
 
@@ -15,13 +16,26 @@ class SettingsActivity : AppCompatActivity() {
         title = getString(R.string.game_options)
 
         val prefs = Preferences.fromContext(this)
-        settingsGridPreview.allowSecondPlayerMove = false
-        settingsGridPreview.allowFirstPlayerMove = false
+        settingsGridPreview.playerTurn = PlayerNum.NOPLAYER
         settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
 
+        settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
+        settingsAutoCaptureSwitch.isChecked = prefs.autoCapture
+        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
         settingsCaptureBackwardSwitch.isChecked = prefs.canCaptureBackwards
         settingsMoveBackwardSwitch.isChecked = prefs.canMoveBackwards
         settingsFlyingKingSwitch.isChecked = prefs.flyingKing
+
+        settingsMandatoryCapturesSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.mandatoryCapture = isChecked
+            settingsAutoCaptureSwitch.isEnabled = isChecked
+            prefs.save(this)
+        }
+
+        settingsAutoCaptureSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.autoCapture = isChecked
+            prefs.save(this)
+        }
 
         settingsCaptureBackwardSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.canCaptureBackwards = isChecked

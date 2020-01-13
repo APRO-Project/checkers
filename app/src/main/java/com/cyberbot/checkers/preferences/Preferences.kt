@@ -6,6 +6,8 @@ import com.cyberbot.checkers.R
 class Preferences private constructor(
     var gridSize: Int,
     var playerRows: Int,
+    var mandatoryCapture: Boolean,
+    var autoCapture: Boolean,
     var canMoveBackwards: Boolean,
     var canCaptureBackwards: Boolean,
     var flyingKing: Boolean
@@ -22,6 +24,12 @@ class Preferences private constructor(
 
                 val playerRows = sharedPref.getInt(getString(R.string.preference_player_rows), 4)
 
+                val mandatoryCapture =
+                    sharedPref.getBoolean(getString(R.string.preference_mandatory_capture), true)
+
+                val autoCapture =
+                    sharedPref.getBoolean(getString(R.string.preference_auto_capture), true)
+
                 val canMoveBackwards =
                     sharedPref.getBoolean(getString(R.string.preference_can_move_backwards), false)
 
@@ -37,6 +45,8 @@ class Preferences private constructor(
                 return Preferences(
                     gridSize,
                     playerRows,
+                    mandatoryCapture,
+                    autoCapture,
                     canMoveBackwards,
                     canCaptureBackwards,
                     flyingKing
@@ -55,6 +65,8 @@ class Preferences private constructor(
             sharedPref.edit().also {
                 it.putInt(getString(R.string.preference_grid_size), gridSize)
                 it.putInt(getString(R.string.preference_player_rows), playerRows)
+                it.putBoolean(getString(R.string.preference_mandatory_capture), mandatoryCapture)
+                it.putBoolean(getString(R.string.preference_auto_capture), autoCapture)
                 it.putBoolean(getString(R.string.preference_can_move_backwards), canMoveBackwards)
                 it.putBoolean(
                     getString(R.string.preference_can_capture_backwards),
