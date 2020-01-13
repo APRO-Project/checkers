@@ -10,6 +10,7 @@ import androidx.core.animation.doOnStart
 import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.GridEntry
 import java.lang.RuntimeException
+import kotlin.math.roundToLong
 
 class CaptureExplosionAnimator(singleCellSize: Float) :
     PieceAnimator(singleCellSize, sequential = false) {
@@ -82,18 +83,21 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                 soundEffectListener?.invoke(SoundType.EXPLOSION_LONG)
             }
 
-            doOnEnd {
-                targetEntries.forEach { pieceTypeRemovedListener?.invoke(it) }
-            }
-
             duration = riseAnimationDuration
         }
 
         val hitAnimator = AnimatorSet().apply {
+            var notifyRemove = true
             playTogether(
                 ValueAnimator.ofFloat(topScale, lowScale).apply {
                     addUpdateListener {
-                        values.scale = it.animatedValue as Float
+                        val scale = it.animatedValue as Float
+                        if (scale < 1F && notifyRemove) {
+                            notifyRemove = false
+                            targetEntries.forEach { e -> pieceTypeRemovedListener?.invoke(e) }
+                        }
+
+                        values.scale = scale
                         onUpdate(entry, values)
                     }
                 },
