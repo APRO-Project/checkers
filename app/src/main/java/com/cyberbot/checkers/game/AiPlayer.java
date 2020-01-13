@@ -14,15 +14,15 @@ public class AiPlayer {
     public Move getAiMove(Grid currentGrid) {
         Move bestMove = null;
         int topValue = -1000;
-        ArrayList<Move> possibleMoves = null;   //TODO
+        ArrayList<Move> possibleMoves = new ArrayList<>();   //TODO
         for (Move move : possibleMoves) {
             Grid simulated = Grid.simulateMove(currentGrid, move);
 
-            ArrayList<Move> possibleSecondMoves = null;   //TODO
+            ArrayList<Move> possibleSecondMoves = new ArrayList<>();   //TODO
             for (Move move2 : possibleSecondMoves) {
                 Grid simulated2 = Grid.simulateMove(simulated, move2);
 
-                ArrayList<Move> possibleThirdMoves = null;   //TODO
+                ArrayList<Move> possibleThirdMoves = new ArrayList<>();   //TODO
                 for (Move move3 : possibleThirdMoves) {
                     Grid simulated3 = Grid.simulateMove(simulated2, move3);
 

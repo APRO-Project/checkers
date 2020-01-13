@@ -10,7 +10,7 @@ public class Move {
     public Move(GridEntry start, GridEntry end) {
         this.start = start;
         this.end = end;
-        this.killedInAction = null;
+        this.killedInAction = new ArrayList<>();
     }
 
     public Move(GridEntry start, GridEntry end, ArrayList<GridEntry> killedInAction) {
