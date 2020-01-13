@@ -4,7 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import com.cyberbot.checkers.game.GridEntry
 
-abstract class PieceAnimator(private val singleCellSize: Float, private var sequential: Boolean) {
+abstract class PieceAnimator(protected val singleCellSize: Float, private var sequential: Boolean) {
     val animatedPieces = HashMap<GridEntry, AnimatedPieceValues>()
     protected val animatorUpdateListeners = ArrayList<AnimatorUpdateListener>()
     protected val animators = ArrayList<Animator>()
@@ -48,6 +48,12 @@ abstract class PieceAnimator(private val singleCellSize: Float, private var sequ
             } else {
                 playTogether(animators)
             }
+        }
+    }
+
+    protected fun onUpdate(entry: GridEntry, values: AnimatedPieceValues) {
+        animatorUpdateListeners.forEach {
+            it.onUpdate(entry, values)
         }
     }
 }

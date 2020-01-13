@@ -26,12 +26,8 @@ class ScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
         animators.add(ValueAnimator.ofFloat(srcScale, dstScale).apply {
             addUpdateListener { animator ->
                 values.scale = animator.animatedValue as Float
-                animatorUpdateListeners.forEach {
-                    it.onUpdate(entry, values)
-                }
+                onUpdate(entry, values)
             }
-
-            duration = 500L
         })
     }
 }

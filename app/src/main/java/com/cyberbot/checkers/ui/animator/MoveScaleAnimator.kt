@@ -26,30 +26,22 @@ class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
                 ValueAnimator.ofFloat(srcScale, dstScale).apply {
                     addUpdateListener { animator ->
                         values.scale = animator.animatedValue as Float
-                        animatorUpdateListeners.forEach {
-                            it.onUpdate(entry, values)
-                        }
+                        onUpdate(entry, values)
                     }
                 },
                 ValueAnimator.ofFloat(srcX, dstX).apply {
                     addUpdateListener { animator ->
                         values.x = animator.animatedValue as Float
-                        animatorUpdateListeners.forEach {
-                            it.onUpdate(entry, values)
-                        }
+                        onUpdate(entry, values)
                     }
                 },
                 ValueAnimator.ofFloat(srcY, dstY).apply {
                     addUpdateListener { animator ->
                         values.y = animator.animatedValue as Float
-                        animatorUpdateListeners.forEach {
-                            it.onUpdate(entry, values)
-                        }
+                        onUpdate(entry, values)
                     }
                 }
             )
-
-            duration = 500
         })
     }
 
