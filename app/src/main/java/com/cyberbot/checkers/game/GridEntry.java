@@ -11,8 +11,6 @@ public class GridEntry {
     private final int y;
     private PlayerNum player = PlayerNum.NOPLAYER;
     private PieceType pieceType = PieceType.UNASSIGNED;
-    private HashSet<GridEntry> allowedMovesCache = null;
-    private ArrayList<CaptureChain> allowedCapturesCache = null;
 
     public int getY() {
         return y;
@@ -26,7 +24,7 @@ public class GridEntry {
         return player;
     }
 
-    public void setPlayer(PlayerNum player) {
+    void setPlayer(PlayerNum player) {
         this.player = player;
     }
 
@@ -34,29 +32,8 @@ public class GridEntry {
         return pieceType;
     }
 
-    public void setPieceType(PieceType pieceType) {
+    void setPieceType(PieceType pieceType) {
         this.pieceType = pieceType;
-    }
-
-    public HashSet<GridEntry> getAllowedMovesCache() {
-        return allowedMovesCache;
-    }
-
-    public void setAllowedMovesCache(HashSet<GridEntry> allowedMovesCache) {
-        this.allowedMovesCache = allowedMovesCache;
-    }
-
-    public ArrayList<CaptureChain> getAllowedCapturesCache() {
-        return allowedCapturesCache;
-    }
-
-    public void setAllowedCapturesCache(ArrayList<CaptureChain> allowedCapturesCache) {
-        this.allowedCapturesCache = allowedCapturesCache;
-    }
-
-    public void clearCache() {
-        allowedMovesCache = null;
-        allowedCapturesCache = null;
     }
 
     GridEntry(int x, int y) {

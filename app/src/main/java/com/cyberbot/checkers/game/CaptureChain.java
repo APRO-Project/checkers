@@ -11,19 +11,19 @@ public class CaptureChain {
     private final Integer captureLength;
     private final ArrayList<CaptureChain> nextCaptures;
 
-    public CaptureChain getLastCapture() {
+    CaptureChain getLastCapture() {
         return lastCapture;
     }
 
-    public GridEntry getLocationAfterCapture() {
+    GridEntry getLocationAfterCapture() {
         return locationAfterCapture;
     }
 
-    public GridEntry getCapturedPiece() {
+    GridEntry getCapturedPiece() {
         return capturedPiece;
     }
 
-    public Integer getCaptureLength() {
+    Integer getCaptureLength() {
         return captureLength;
     }
 
@@ -31,7 +31,7 @@ public class CaptureChain {
         return nextCaptures;
     }
 
-    public void addNextCapture(CaptureChain capture) {
+    void addNextCapture(CaptureChain capture) {
         nextCaptures.add(capture);
     }
 
@@ -53,7 +53,7 @@ public class CaptureChain {
         else captureLength = lastCapture.captureLength + 1;
     }
 
-    public boolean checkIfEntryCaptured(GridEntry entry) {
+    boolean checkIfEntryCaptured(GridEntry entry) {
         for(CaptureChain prevCapture = this; prevCapture != null; prevCapture = prevCapture.lastCapture) {
             if(prevCapture.capturedPiece == entry) return true;
         }
@@ -68,18 +68,25 @@ public class CaptureChain {
         }
     }
 
-    public CaptureChain getCaptureRoot() {
-        if(isCaptureRoot()) return this;
-
-        CaptureChain previousCapture = this;
-        while(!previousCapture.isCaptureRoot()) {
-            previousCapture = previousCapture.lastCapture;
+    private void getCaptureIntermediateEndpoints(@NotNull ArrayList<CaptureChain> output) {
+        if(!isCaptureRoot()) output.add(this);
+        for(CaptureChain nextCapture: nextCaptures) {
+            nextCapture.getCaptureIntermediateEndpoints(output);
         }
-
-        return previousCapture;
     }
 
-    public ArrayList<CaptureChain> getLongestCaptures() {
+    ArrayList<CaptureChain> getAllCaptures() {
+        if(!isCaptureRoot()) {
+            throw new RuntimeException("Attempt to get all captures not from capture root");
+        }
+
+        ArrayList<CaptureChain> intermediateEndpoints = new ArrayList<>();
+        getCaptureIntermediateEndpoints(intermediateEndpoints);
+
+        return intermediateEndpoints;
+    }
+
+    ArrayList<CaptureChain> getLongestCaptures() {
         if(!isCaptureRoot()) {
             throw new RuntimeException("Attempt to get longest captures not from capture root");
         }
@@ -102,16 +109,21 @@ public class CaptureChain {
         return longestCaptures;
     }
 
-    public ArrayList<GridEntry> getCapturedPieces() {
-        if(!isCaptureEndpoint()) {
-            throw new RuntimeException("Attempt to get captured pieces not from capture endpoint");
-        }
-
+    ArrayList<GridEntry> getCapturedPieces() {
         ArrayList<GridEntry> capturedPieces = new ArrayList<>();
         for(CaptureChain capture = this; capture.lastCapture != null; capture = capture.lastCapture) {
-            capturedPieces.add(capture.capturedPiece);
+            capturedPieces.add(0, capture.capturedPiece);
         }
 
         return capturedPieces;
+    }
+
+    ArrayList<GridEntry> getIntermediateSteps() {
+        ArrayList<GridEntry> intermediateSteps = new ArrayList<>();
+        for(CaptureChain capture = this.lastCapture; capture.lastCapture != null; capture = capture.lastCapture) {
+            intermediateSteps.add(0, capture.locationAfterCapture);
+        }
+
+        return intermediateSteps;
     }
 }
