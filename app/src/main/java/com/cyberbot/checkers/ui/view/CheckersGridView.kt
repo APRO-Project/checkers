@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.animation.addListener
+import androidx.core.animation.doOnCancel
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.withTranslation
@@ -403,6 +404,10 @@ class CheckersGridView(
                         currentAnimator = null
 
                         moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
+
+                        canvasOffsetX = 0F
+                        canvasOffsetY = 0F
+                        invalidate()
                     }
 
                     start()
@@ -650,6 +655,9 @@ class CheckersGridView(
                                     userInteractionEnabled = true
 
                                     moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
+
+                                    canvasOffsetX = 0F
+                                    canvasOffsetY = 0F
                                     invalidate()
                                 }
 
