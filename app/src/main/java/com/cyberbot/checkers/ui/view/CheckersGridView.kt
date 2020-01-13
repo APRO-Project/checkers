@@ -9,13 +9,21 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PieceType
 import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.ui.animator.FullMoveAnimator
+import com.cyberbot.checkers.ui.animator.PieceAnimator
+import com.cyberbot.checkers.ui.animator.MoveScaleAnimator
+import com.cyberbot.checkers.ui.animator.ScaleAnimator
 import java.lang.Float.max
 import java.lang.Float.min
 import kotlin.math.roundToInt
@@ -220,7 +228,9 @@ class CheckersGridView(
     private var moveOffsetY = 0F
     private var moveX = 0F
     private var moveY = 0F
-    private var returnAnimatorSet: AnimatorSet? = null
+
+    private var currentPieceAnimator: PieceAnimator? = null
+    private var currentAnimator: Animator? = null
 
     init {
         context.theme.obtainStyledAttributes(
@@ -353,74 +363,29 @@ class CheckersGridView(
             return false
         }
 
-        val srcX = ((srcEntry.x) + 0.5F) * singleCellSize
-        val srcY = ((srcEntry.y) + 0.5F) * singleCellSize
+        currentPieceAnimator = FullMoveAnimator(singleCellSize).apply {
+            addPiece(srcEntry, dstEntry, 1F, playerScaleMoving)
+            addUpdateListener { _, v ->
+                invalidate()
+                Log.d("FullMoveAnimator", v.toString())
+            }
 
-        val dstX = ((dstEntry.x) + 0.5F) * singleCellSize
-        val dstY = ((dstEntry.y) + 0.5F) * singleCellSize
-
-        moveX = srcX
-        moveY = srcY
-
-        movingEntry = srcEntry
-
-        AnimatorSet().apply {
-            playSequentially(
-                ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
-                    addUpdateListener {
-                        playerScaleCurrent = it.animatedValue as Float
-                        invalidate()
-                    }
-
-                    duration = artificialAnimationDuration
-                },
-                AnimatorSet().apply {
-                    playTogether(ValueAnimator.ofFloat(srcX, dstX).apply {
-                        addUpdateListener {
-                            moveX = it.animatedValue as Float
-                            invalidate()
-                        }
-                    }, ValueAnimator.ofFloat(srcY, dstY).apply {
-                        addUpdateListener {
-                            moveY = it.animatedValue as Float
-                            invalidate()
-                        }
-                    })
-
-                    duration = artificialAnimationDuration
-                },
-                ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
-                    addUpdateListener {
-                        playerScaleCurrent = it.animatedValue as Float
-                        invalidate()
-                    }
-
-                    duration = artificialAnimationDuration
-                })
-
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    userInteractionEnabled = false
-
+            currentAnimator = createAnimator().apply {
+                doOnStart {
                     moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
                 }
 
-                override fun onAnimationEnd(animation: Animator) {
-                    userInteractionEnabled = true
-                    movingEntry = null
-                    moveY = 0F
-                    moveX = 0F
+                doOnEnd {
+                    currentPieceAnimator = null
+                    currentAnimator = null
 
                     moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
-
-                    invalidate()
                 }
-            })
 
-            duration = artificialAnimationDuration
-            start()
+                duration = artificialAnimationDuration
+                start()
+            }
         }
-
         return true
     }
 
@@ -442,10 +407,12 @@ class CheckersGridView(
             gridData.forEach {
                 drawGridEntry(this, it)
 
-                if (it != movingEntry) {
-                    val cx = (it.x + 0.5F) * singleCellSize
-                    val cy = (it.y + 0.5F) * singleCellSize
-                    drawPlayer(this, it, cx, cy)
+                currentPieceAnimator.let { animator ->
+                    if (animator == null || !animator.animatedPieces.containsKey(it)) {
+                        val cx = (it.x + 0.5F) * singleCellSize
+                        val cy = (it.y + 0.5F) * singleCellSize
+                        drawPlayer(this, it, cx, cy)
+                    }
                 }
             }
 
@@ -480,8 +447,22 @@ class CheckersGridView(
                         drawPlayer(this, dstEntry, cx, cy)
                     }
                 }
+            }
 
-                drawPlayer(this, srcEntry, moveX, moveY, playerScaleCurrent)
+            currentPieceAnimator.let { animator ->
+                if (animator !== null) {
+                    animator.animatedPieces.forEach { (e, v) ->
+                        if (e == movingEntry) {
+                            drawPlayer(this, e, moveX, moveY, v.scale)
+                        } else {
+                            drawPlayer(this, e, v.x, v.y, v.scale)
+                        }
+                    }
+                } else {
+                    movingEntry?.let {
+                        drawPlayer(this, it, moveX, moveY, playerScaleMoving)
+                    }
+                }
             }
         }
     }
@@ -497,9 +478,10 @@ class CheckersGridView(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 userInteracting = true
-                returnAnimatorSet?.let {
+                currentAnimator?.let {
                     it.cancel()
-                    returnAnimatorSet = null
+                    currentPieceAnimator = null
+                    currentAnimator = null
                 }
 
                 val x = (event.x / singleCellSize).toInt()
@@ -521,19 +503,24 @@ class CheckersGridView(
                 moveY = cy
 
                 if (movingEntry == null) {
-                    ValueAnimator.ofFloat(1F, playerScaleMoving).apply {
-                        addUpdateListener {
-                            playerScaleCurrent = it.animatedValue as Float
+                    currentPieceAnimator = ScaleAnimator(singleCellSize).apply {
+                        addPiece(entry, 1F, playerScaleMoving)
+                        addUpdateListener { _, _ ->
                             invalidate()
                         }
 
-                        duration = riseAnimationDuration
-                        start()
+                        currentAnimator = createAnimator().apply {
+                            doOnEnd {
+                                currentAnimator = null
+                            }
+
+                            duration = riseAnimationDuration
+                            start()
+                        }
                     }
                 }
 
                 movingEntry = entry
-
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -542,7 +529,6 @@ class CheckersGridView(
                 moveY = max(min(event.y - moveOffsetY, viewWidth.toFloat() - 1), 0F)
 
                 invalidate()
-
                 return true
             }
             MotionEvent.ACTION_UP -> {
@@ -571,40 +557,29 @@ class CheckersGridView(
                     val srcX = moveX
                     val srcY = moveY
 
-                    returnAnimatorSet = AnimatorSet().apply {
-                        playTogether(
-                            ValueAnimator.ofFloat(playerScaleMoving, 1F).apply {
-                                addUpdateListener {
-                                    playerScaleCurrent = it.animatedValue as Float
-                                    invalidate()
-                                }
-                            },
-                            ValueAnimator.ofFloat(srcX, dstX).apply {
-                                addUpdateListener {
-                                    moveX = it.animatedValue as Float
-                                }
-                            },
-                            ValueAnimator.ofFloat(srcY, dstY).apply {
-                                addUpdateListener {
-                                    moveY = it.animatedValue as Float
-                                }
-                            })
+                    userInteractionEnabled = true
+                    movingEntry = null
+                    moveY = 0F
+                    moveX = 0F
 
-                        addListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                userInteractionEnabled = true
-                                movingEntry = null
-                                moveY = 0F
-                                moveX = 0F
-                                returnAnimatorSet = null
+                    currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
+                        addPiece(gridEntry, srcX, srcY, playerScaleMoving, dstX, dstY, 1F)
+                        addUpdateListener { _, _ ->
+                            invalidate()
+                        }
+
+                        currentAnimator = createAnimator().apply {
+                            doOnEnd {
+                                currentAnimator = null
+                                currentPieceAnimator = null
 
                                 moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
                                 invalidate()
                             }
-                        })
 
-                        duration = returnAnimationDuration
-                        start()
+                            duration = returnAnimationDuration
+                            start()
+                        }
                     }
                 }
 
