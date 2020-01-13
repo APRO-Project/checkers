@@ -1,7 +1,13 @@
 package com.cyberbot.checkers.ui.animator
 
 import android.animation.AnimatorSet
+import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.graphics.Interpolator
+import android.view.animation.PathInterpolator
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
+import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.GridEntry
 import java.lang.RuntimeException
 
@@ -9,9 +15,27 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
     PieceAnimator(singleCellSize, sequential = false) {
 
     var riseAnimationDuration = 1000L
-    var fallAnimationDuration = 200L
+    var fallAnimationDuration = 250L
+
+    var pieceTypeRemovedListener: ((GridEntry) -> Unit)? = null
+    var gridVibrationListener: ((Float, Float) -> Unit)? = null
+    var soundEffectListener: ((SoundType) -> Unit)? = null
 
     var targetEntries = ArrayList<GridEntry>()
+
+    fun setDestroyerPiece(
+        entry: GridEntry,
+        srcScale: Float,
+        dstEntry: GridEntry,
+        dstScale: Float = 1F,
+        topScale: Float = 3F,
+        lowScale: Float = 0.8F
+    ) {
+        val cx = (entry.x + 0.5F) * singleCellSize
+        val cy = (entry.y + 0.5F) * singleCellSize
+
+        setDestroyerPiece(entry, cx, cy, srcScale, dstEntry, dstScale, topScale, lowScale)
+    }
 
     fun setDestroyerPiece(
         entry: GridEntry,
@@ -54,7 +78,36 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                 }
             )
 
+            doOnStart {
+                soundEffectListener?.invoke(SoundType.EXPLOSION_LONG)
+            }
+
+            doOnEnd {
+                targetEntries.forEach { pieceTypeRemovedListener?.invoke(it) }
+            }
+
             duration = riseAnimationDuration
+        }
+
+        val hitAnimator = AnimatorSet().apply {
+            playTogether(
+                ValueAnimator.ofFloat(topScale, lowScale).apply {
+                    addUpdateListener {
+                        values.scale = it.animatedValue as Float
+                        onUpdate(entry, values)
+                    }
+                },
+                ValueAnimator.ofFloat(0F, 8F, -10F, 15F, -20F, 25F, -30F, 10F, -5F, 0F).apply {
+                    addUpdateListener {
+                        val value = it.animatedValue as Float
+                        gridVibrationListener?.invoke(value, -value)
+                        onUpdate(entry, values)
+                    }
+                }
+            )
+
+            interpolator = PathInterpolator(1.000F, 0.000F, 0.675F, 0.190F)
+            duration = fallAnimationDuration
         }
 
         val moveDstAnimator = AnimatorSet().apply {
@@ -71,28 +124,21 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                         onUpdate(entry, values)
                     }
                 })
-            duration = 500
+            duration = 1000
         }
 
         animators.add(
             AnimatorSet().apply {
                 playSequentially(
                     riseAnimator,
-                    ValueAnimator.ofFloat(topScale, lowScale).apply {
-                        addUpdateListener {
-                            values.scale = it.animatedValue as Float
-                            onUpdate(entry, values)
-                        }
-
-                        duration = fallAnimationDuration
-                    },
+                    hitAnimator,
                     ValueAnimator.ofFloat(lowScale, dstScale).apply {
                         addUpdateListener {
                             values.scale = it.animatedValue as Float
                             onUpdate(entry, values)
                         }
 
-                        duration = 750
+                        duration = 1000
                     },
                     moveDstAnimator
                 )

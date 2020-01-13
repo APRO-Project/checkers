@@ -366,27 +366,71 @@ class CheckersGridView(
             return false
         }
 
-        currentPieceAnimator = FullMoveAnimator(singleCellSize).apply {
-            addPiece(srcEntry, dstEntry, 1F, playerScaleMoving)
-            addUpdateListener { _, v ->
-                invalidate()
+        val destination = gridData.getDestination(srcEntry, dstEntry)
+
+        if (destination.isCapture) {
+            currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
+                destination.capturedPieces.forEach { addTargetPiece(it) }
+                setDestroyerPiece(
+                    srcEntry,
+                    playerScaleMoving,
+                    destination.destinationEntry
+                )
+
+                pieceTypeRemovedListener = {
+                    gridData.removeGridEntry(it)
+                }
+
+                gridVibrationListener = { x, y ->
+                    canvasOffsetX = x
+                    canvasOffsetY = y
+                }
+
+                soundEffectListener = {
+                    Sound.playSound(context, it)
+                }
+                soundEffectListener = {
+                    Sound.playSound(context, it)
+                }
+
+                addUpdateListener { _, _ ->
+                    invalidate()
+                }
+
+                currentAnimator = createAnimator().apply {
+                    doOnEnd {
+                        currentPieceAnimator = null
+                        currentAnimator = null
+
+                        moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
+                    }
+
+                    start()
+                }
             }
-
-            currentAnimator = createAnimator().apply {
-                doOnStart {
-                    if (soundFxEnabled) Sound.playSound(context, SoundType.MOVE)
-                    moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
+        } else {
+            currentPieceAnimator = FullMoveAnimator(singleCellSize).apply {
+                addPiece(srcEntry, dstEntry, 1F, playerScaleMoving)
+                addUpdateListener { _, v ->
+                    invalidate()
                 }
 
-                doOnEnd {
-                    currentPieceAnimator = null
-                    currentAnimator = null
+                currentAnimator = createAnimator().apply {
+                    doOnStart {
+                        if (soundFxEnabled) Sound.playSound(context, SoundType.MOVE)
+                        moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
+                    }
 
-                    moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
+                    doOnEnd {
+                        currentPieceAnimator = null
+                        currentAnimator = null
+
+                        moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
+                    }
+
+                    duration = artificialAnimationDuration
+                    start()
                 }
-
-                duration = artificialAnimationDuration
-                start()
             }
         }
         return true
@@ -544,7 +588,7 @@ class CheckersGridView(
 
                 userInteracting = false
 
-                if(movingEntry == null) {
+                if (movingEntry == null) {
                     return false
                 }
 
@@ -564,9 +608,7 @@ class CheckersGridView(
                     val srcX = moveX
                     val srcY = moveY
 
-                    val destinations = gridData.getMovableEntries(srcEntry.player)[srcEntry]
-                        ?: throw java.lang.RuntimeException("Moving entry is not movable")
-                    val destination = destinations.first { it.destinationEntry == entry }
+                    val destination = gridData.getDestination(srcEntry, entry)
                         ?: throw java.lang.RuntimeException("Move here is not allowed")
 
                     movingEntry = null
@@ -576,11 +618,29 @@ class CheckersGridView(
                     if (destination.isCapture) {
                         currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
                             destination.capturedPieces.forEach { addTargetPiece(it) }
-                            setDestroyerPiece(srcEntry, srcX, srcY, playerScaleMoving, destination.destinationEntry)
+                            setDestroyerPiece(
+                                srcEntry,
+                                srcX,
+                                srcY,
+                                playerScaleMoving,
+                                destination.destinationEntry
+                            )
 
-                            addUpdateListener { _, v ->
+                            pieceTypeRemovedListener = {
+                                gridData.removeGridEntry(it)
+                            }
+
+                            gridVibrationListener = { x, y ->
+                                canvasOffsetX = x
+                                canvasOffsetY = y
+                            }
+
+                            soundEffectListener = {
+                                Sound.playSound(context, it)
+                            }
+
+                            addUpdateListener { _, _ ->
                                 invalidate()
-                                Log.d("CaptureExplosionAnimator", v.toString())
                             }
 
                             currentAnimator = createAnimator().apply {

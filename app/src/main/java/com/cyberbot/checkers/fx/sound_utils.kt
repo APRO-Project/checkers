@@ -28,8 +28,3 @@ fun getRandomAiThinkSoundRes(): Int {
         R.raw.ai_think3
     ).random()
 }
-
-fun playSoundRes(context: Context, @RawRes resId: Int) {
-    val mp = MediaPlayer.create(context, resId)
-    mp.start()
-}
