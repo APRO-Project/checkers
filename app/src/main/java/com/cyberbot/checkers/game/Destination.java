@@ -20,4 +20,8 @@ public class Destination {
         capturedPieces = null;
         intermediateSteps = null;
     }
+
+    public boolean isCapture() {
+        return capturedPieces == null;
+    }
 }
