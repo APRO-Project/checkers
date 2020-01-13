@@ -130,7 +130,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                         onUpdate(entry, values)
                     }
                 })
-            duration = 1000
+            duration = 500
         }
 
         animators.add(
@@ -144,7 +144,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                             onUpdate(entry, values)
                         }
 
-                        duration = 1000
+                        duration = 500
                     },
                     moveDstAnimator
                 )
