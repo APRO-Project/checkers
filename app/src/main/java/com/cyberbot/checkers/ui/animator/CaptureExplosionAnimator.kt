@@ -10,6 +10,7 @@ import androidx.core.animation.doOnStart
 import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.GridEntry
 import java.lang.RuntimeException
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 class CaptureExplosionAnimator(singleCellSize: Float) :
@@ -100,6 +101,8 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                         values.scale = scale
                         onUpdate(entry, values)
                     }
+
+                    interpolator = PathInterpolator(1.000F, 0.000F, 0.675F, 0.190F)
                 },
                 ValueAnimator.ofFloat(0F, 8F, -10F, 15F, -20F, 25F, -30F, 10F, -5F, 0F).apply {
                     addUpdateListener {
@@ -110,7 +113,6 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                 }
             )
 
-            interpolator = PathInterpolator(1.000F, 0.000F, 0.675F, 0.190F)
             duration = fallAnimationDuration
         }
 
@@ -156,8 +158,8 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
     }
 
     private fun calculateTarget(): Pair<Float, Float> {
-        val avgX = targetEntries.map { (it.x + 0.5F) * singleCellSize }.average()
-        val avgY = targetEntries.map { (it.y + 0.5F) * singleCellSize }.average()
+        val avgX = (targetEntries.map { it.x }.average().roundToInt() + 0.5) * singleCellSize
+        val avgY = (targetEntries.map { it.y }.average().roundToInt() + 0.5) * singleCellSize
 
         return Pair(avgX.toFloat(), avgY.toFloat())
     }
