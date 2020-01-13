@@ -105,12 +105,12 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
 
                     interpolator = PathInterpolator(1.000F, 0.000F, 0.675F, 0.190F)
                 },
-                ValueAnimator.ofFloat(
-                    0F, -0.05F, 0.08F, -0.125F, 0.2F,
-                    -0.29F, 0.4F, -0.53F, 0.07F, -0.035F, 0F
+                ValueAnimator.ofFloat(//TODO: Make these random
+                    0F, -0.005F, 0.008F, -0.0125F, 0.02F,
+                    -0.029F, 0.04F, -0.053F, 0.007F, -0.0035F, 0F
                 ).apply {
                     addUpdateListener {
-                        val value = it.animatedValue as Float * singleCellSize
+                        val value = it.animatedValue as Float
                         gridVibrationListener?.invoke(
                             value,
                             if (Random.nextBoolean()) value else -value

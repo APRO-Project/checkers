@@ -383,8 +383,8 @@ class CheckersGridView(
                 }
 
                 gridVibrationListener = { x, y ->
-                    canvasOffsetX = x
-                    canvasOffsetY = y
+                    canvasOffsetX = x * viewWidth
+                    canvasOffsetY = y * viewWidth
                 }
 
                 soundEffectListener = {
@@ -636,8 +636,8 @@ class CheckersGridView(
                             }
 
                             gridVibrationListener = { x, y ->
-                                canvasOffsetX = x
-                                canvasOffsetY = y
+                                canvasOffsetX = x * viewWidth
+                                canvasOffsetY = y * viewWidth
                             }
 
                             soundEffectListener = {
