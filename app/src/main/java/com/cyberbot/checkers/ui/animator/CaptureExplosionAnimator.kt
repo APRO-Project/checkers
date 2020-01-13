@@ -31,7 +31,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
         dstEntry: GridEntry,
         dstScale: Float = 1F,
         topScale: Float = 3F,
-        lowScale: Float = 0.8F
+        lowScale: Float = 0.6F
     ) {
         val cx = (entry.x + 0.5F) * singleCellSize
         val cy = (entry.y + 0.5F) * singleCellSize
@@ -47,7 +47,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
         dstEntry: GridEntry,
         dstScale: Float = 1F,
         topScale: Float = 3F,
-        lowScale: Float = 0.8F
+        lowScale: Float = 0.6F
     ) {
         addPieceInternal(entry, srcX, srcY, srcScale)
         val values =
@@ -130,7 +130,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                         onUpdate(entry, values)
                     }
                 })
-            duration = 500
+            duration = 250
         }
 
         animators.add(
@@ -144,7 +144,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
                             onUpdate(entry, values)
                         }
 
-                        duration = 500
+                        duration = 750
                     },
                     moveDstAnimator
                 )
