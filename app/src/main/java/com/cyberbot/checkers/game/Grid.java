@@ -102,7 +102,7 @@ public class Grid implements Iterable<GridEntry> {
         if(destinations == null) return false;
 
         for(Destination destination: destinations) {
-            if(destination.destinationEntry == dst) return true;
+            if(destination.getDestinationEntry() == dst) return true;
         }
 
         return false;

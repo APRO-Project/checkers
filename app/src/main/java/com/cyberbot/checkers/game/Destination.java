@@ -5,9 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
 public class Destination {
-    public final GridEntry destinationEntry;
-    public final ArrayList<GridEntry> capturedPieces;
-    public final ArrayList<GridEntry> intermediateSteps;
+    private final GridEntry destinationEntry;
+    private final ArrayList<GridEntry> capturedPieces;
+    private final ArrayList<GridEntry> intermediateSteps;
 
     Destination(@NotNull CaptureChain captureChain) {
         destinationEntry = captureChain.getLocationAfterCapture();
@@ -17,11 +17,25 @@ public class Destination {
 
     Destination(@NotNull GridEntry destinationEntry) {
         this.destinationEntry = destinationEntry;
-        capturedPieces = null;
-        intermediateSteps = null;
+        capturedPieces = new ArrayList<>();
+        intermediateSteps = new ArrayList<>();
     }
 
     public boolean isCapture() {
-        return capturedPieces == null;
+        return capturedPieces != null && capturedPieces.size() > 0;
+    }
+
+
+
+    public ArrayList<GridEntry> getCapturedPieces() {
+        return capturedPieces;
+    }
+
+    public GridEntry getDestinationEntry() {
+        return destinationEntry;
+    }
+
+    public ArrayList<GridEntry> getIntermediateSteps() {
+        return intermediateSteps;
     }
 }
