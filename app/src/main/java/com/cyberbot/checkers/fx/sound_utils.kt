@@ -14,6 +14,13 @@ fun getRandomMoveSoundRes(): Int {
 }
 
 @RawRes
+fun getRandomExplosionSoundRes(): Int {
+    return intArrayOf(
+        R.raw.explode1
+    ).random()
+}
+
+@RawRes
 fun getRandomAiThinkSoundRes(): Int {
     return intArrayOf(
         R.raw.ai_think1,
@@ -22,7 +29,7 @@ fun getRandomAiThinkSoundRes(): Int {
     ).random()
 }
 
-fun play(context: Context, @RawRes resId: Int) {
+fun playSoundRes(context: Context, @RawRes resId: Int) {
     val mp = MediaPlayer.create(context, resId)
     mp.start()
 }

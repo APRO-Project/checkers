@@ -15,7 +15,10 @@ import android.view.View
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
+import androidx.core.graphics.withTranslation
 import com.cyberbot.checkers.R
+import com.cyberbot.checkers.fx.Sound
+import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PieceType
@@ -177,6 +180,7 @@ class CheckersGridView(
     private var playerRadiusIcon: Float = 0F
     private var userInteractionEnabled = true
 
+    var soundFxEnabled = true
     var playerTurn = PlayerNum.NOPLAYER
 
     var moveAttemptListener: MoveAttemptListener? = null
@@ -222,12 +226,14 @@ class CheckersGridView(
         }
 
     private var userInteracting = false
-    private var playerScaleCurrent = 1F
     private var movingEntry: GridEntry? = null
     private var moveOffsetX = 0F
     private var moveOffsetY = 0F
     private var moveX = 0F
     private var moveY = 0F
+
+    private var canvasOffsetX = 0F
+    private var canvasOffsetY = 0F
 
     private var currentPieceAnimator: PieceAnimator? = null
     private var currentAnimator: Animator? = null
@@ -372,6 +378,7 @@ class CheckersGridView(
 
             currentAnimator = createAnimator().apply {
                 doOnStart {
+                    if(soundFxEnabled) Sound.playSound(context, SoundType.MOVE)
                     moveAttemptListener?.onForcedMoveStart(gridData, srcEntry, dstEntry)
                 }
 
@@ -403,7 +410,7 @@ class CheckersGridView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        canvas.apply {
+        canvas.withTranslation(30F, 30F) {
             gridData.forEach {
                 drawGridEntry(this, it)
 
