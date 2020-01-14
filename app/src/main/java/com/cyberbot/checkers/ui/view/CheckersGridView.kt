@@ -1,35 +1,30 @@
 package com.cyberbot.checkers.ui.view
 
 import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnCancel
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.withTranslation
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.Grid
-import com.cyberbot.checkers.game.GridEntry
-import com.cyberbot.checkers.game.PieceType
-import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.game.*
 import com.cyberbot.checkers.ui.animator.*
 import java.lang.Float.max
 import java.lang.Float.min
 import kotlin.math.roundToInt
 
 
+/**
+ * The main view used to display the [Grid]. It handles all user interactions and animations
+ * related to the [Grid]. It always attempts to be measured as a square.
+ */
 class CheckersGridView(
     context: Context,
     attrs: AttributeSet?
@@ -189,7 +184,10 @@ class CheckersGridView(
     var playerScaleMoving: Float = 1.35F
 
     /**
-     * In relation to the cell size
+     * This is the main player size, represented as a fraction of a single cell's width.
+     *
+     * @see [playerColor1]
+     * @see [playerColor2]
      */
     var playerSize: Float = 0.65F
         set(value) {
@@ -198,7 +196,12 @@ class CheckersGridView(
         }
 
     /**
-     * In relation to player size
+     * This is the player's outline size, represented as a fraction of a the player's radius.
+     * Values smaller then 1 will result in the outline not being showed, since it's drawn under
+     * the player.
+     *
+     * @see [playerOutlineColor1]
+     * @see [playerOutlineColor2]
      */
     var playerOutlineSize: Float = 1.175F
         set(value) {
@@ -207,7 +210,11 @@ class CheckersGridView(
         }
 
     /**
-     * In relation to the player size
+     * Width of the player's icon if it exists,  represented as a fraction of a the player's radius.
+     * Values greater then [playerOutlineSize] are not recommended since they will appear to
+     * stick outside of the player. The icon is drawn in the same color as the outline.
+     *
+     *
      */
     var playerIconSize: Float = 0.75F
         set(value) {
@@ -215,6 +222,9 @@ class CheckersGridView(
             invalidate()
         }
 
+    /**
+     * Main data source for displaying and interacting with.
+     */
     var gridData = Grid(8, 3)
         set(value) {
             field = value
@@ -362,6 +372,22 @@ class CheckersGridView(
         }
     }
 
+    /**
+     * Attempts to properly animate a move from [srcEntry] to [dstEntry] including
+     * any captures along the way.
+     *
+     * When the animation begins it will call [MoveAttemptListener.onForcedMoveStart] on its
+     * [moveAttemptListener] and [MoveAttemptListener.onForcedMoveEnd] when it finishes.
+     * The method does not modify the [Grid] contents, so a [MoveAttemptListener] should be
+     * registered to call [Grid.attemptMove] after the animation has finished.
+     *
+     * @param srcEntry The entry to animate from.
+     * @param dstEntry The entry to animate to.
+     *
+     * @return true if this move was allowed and was executed successfully, false otherwise.
+     *
+     * @see [Grid.destinationAllowed]
+     */
     fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
         if (!gridData.destinationAllowed(srcEntry, dstEntry)) {
             return false
@@ -387,9 +413,6 @@ class CheckersGridView(
                     canvasOffsetY = y * viewWidth
                 }
 
-                soundEffectListener = {
-                    Sound.playSound(context, it)
-                }
                 soundEffectListener = {
                     Sound.playSound(context, it)
                 }
@@ -438,6 +461,7 @@ class CheckersGridView(
                 }
             }
         }
+
         return true
     }
 
@@ -450,6 +474,97 @@ class CheckersGridView(
         playerRadius = singleCellSize * playerSize * 0.5F
         playerRadiusOutline = singleCellSize * playerSize * playerOutlineSize * 0.5F
         playerRadiusIcon = singleCellSize * playerSize * playerIconSize * 0.5F
+    }
+
+    private fun handleMove(srcEntry: GridEntry, dstEntry: GridEntry) {
+        val destination = gridData.getDestination(srcEntry, dstEntry)
+            ?: throw java.lang.RuntimeException("Move here is not allowed")
+
+        movingEntry = null
+
+        if (destination.isCapture) {
+            handleMoveCapture(srcEntry, destination)
+        } else {
+            handleMoveNormal(srcEntry, destination)
+        }
+
+        moveY = 0F
+        moveX = 0F
+    }
+
+    private fun handleMoveNormal(srcEntry: GridEntry, destination: Destination) {
+        val dstEntry = destination.destinationEntry
+
+        currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
+            addPiece(srcEntry, dstEntry, moveX, moveY, playerScaleMoving)
+            addUpdateListener { _, _ ->
+                invalidate()
+            }
+
+            currentAnimator = createAnimator().apply {
+                doOnEnd {
+                    currentAnimator = null
+                    currentPieceAnimator = null
+                    userInteractionEnabled = true
+
+                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, dstEntry)
+                    invalidate()
+                }
+
+                duration = returnAnimationDuration
+                start()
+            }
+        }
+    }
+
+    private fun handleMoveCapture(srcEntry: GridEntry, destination: Destination) {
+        currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
+            destination.capturedPieces.forEach { addTargetPiece(it) }
+            setDestroyerPiece(
+                srcEntry,
+                moveX,
+                moveY,
+                playerScaleMoving,
+                destination.destinationEntry
+            )
+
+            pieceTypeRemovedListener = {
+                gridData.removeGridEntry(it)
+            }
+
+            gridVibrationListener = { x, y ->
+                canvasOffsetX = x * viewWidth
+                canvasOffsetY = y * viewWidth
+            }
+
+            soundEffectListener = {
+                Sound.playSound(context, it)
+            }
+
+            addUpdateListener { _, _ ->
+                invalidate()
+            }
+
+            currentAnimator = createAnimator().apply {
+                doOnEnd {
+                    currentAnimator = null
+                    currentPieceAnimator = null
+                    userInteractionEnabled = true
+
+                    moveAttemptListener?.onUserMoveEnd(
+                        gridData,
+                        srcEntry,
+                        destination.destinationEntry
+                    )
+
+                    canvasOffsetX = 0F
+                    canvasOffsetY = 0F
+                    invalidate()
+                }
+
+                start()
+            }
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -600,94 +715,15 @@ class CheckersGridView(
                 userInteractionEnabled = false
 
                 movingEntry?.let { srcEntry ->
-                    val entry =
-                        if (gridData.destinationAllowed(srcEntry, dstEntry)) {
-                            dstEntry
-                        } else {
-                            srcEntry
-                        }
-
-                    val dstX = (entry.x + 0.5F) * singleCellSize
-                    val dstY = (entry.y + 0.5F) * singleCellSize
-
-                    val srcX = moveX
-                    val srcY = moveY
-
-                    val destination = gridData.getDestination(srcEntry, entry)
-                        ?: throw java.lang.RuntimeException("Move here is not allowed")
-
-                    movingEntry = null
-                    moveY = 0F
-                    moveX = 0F
-
-                    if (destination.isCapture) {
-                        currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
-                            destination.capturedPieces.forEach { addTargetPiece(it) }
-                            setDestroyerPiece(
-                                srcEntry,
-                                srcX,
-                                srcY,
-                                playerScaleMoving,
-                                destination.destinationEntry
-                            )
-
-                            pieceTypeRemovedListener = {
-                                gridData.removeGridEntry(it)
-                            }
-
-                            gridVibrationListener = { x, y ->
-                                canvasOffsetX = x * viewWidth
-                                canvasOffsetY = y * viewWidth
-                            }
-
-                            soundEffectListener = {
-                                Sound.playSound(context, it)
-                            }
-
-                            addUpdateListener { _, _ ->
-                                invalidate()
-                            }
-
-                            currentAnimator = createAnimator().apply {
-                                doOnEnd {
-                                    currentAnimator = null
-                                    currentPieceAnimator = null
-                                    userInteractionEnabled = true
-
-                                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
-
-                                    canvasOffsetX = 0F
-                                    canvasOffsetY = 0F
-                                    invalidate()
-                                }
-
-                                start()
-                            }
-                        }
+                    val entry = if (gridData.destinationAllowed(srcEntry, dstEntry)) {
+                        dstEntry
                     } else {
-                        currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
-                            addPiece(srcEntry, srcX, srcY, playerScaleMoving, dstX, dstY, 1F)
-                            addUpdateListener { _, _ ->
-                                invalidate()
-                            }
-
-                            currentAnimator = createAnimator().apply {
-                                doOnEnd {
-                                    currentAnimator = null
-                                    currentPieceAnimator = null
-                                    userInteractionEnabled = true
-
-                                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
-                                    invalidate()
-                                }
-
-                                duration = returnAnimationDuration
-                                start()
-                            }
-                        }
+                        srcEntry
                     }
-                }
 
+                    handleMove(srcEntry, entry)
+
+                }
                 return true
             }
         }
@@ -719,10 +755,43 @@ class CheckersGridView(
     }
 }
 
+/**
+ * Interface definition for a callback to be invoked when a move animation or user interaction
+ * is started or finished.
+ */
 interface MoveAttemptListener {
+    /**
+     * Called when the user begins to interact with the view.
+     *
+     * @param grid The grid that is the main data source for the view.
+     * @param srcEntry The entry that the user is interacting with
+     */
     fun onUserMoveStart(grid: Grid, srcEntry: GridEntry)
+
+    /**
+     * Called when the user ends th interaction with the view.
+     *
+     * @param grid The grid that is the main data source for the view.
+     * @param srcEntry The entry that the user began the interaction with
+     * @param dstEntry The entry that was the target of user interaction
+     */
     fun onUserMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 
+    /**
+     * Called when an artificial move animation has been started
+     *
+     * @param grid The grid that is the main data source for the view.
+     * @param srcEntry The entry that the was the source of the animation
+     * @param srcEntry The entry that the was the destination of the animation
+     */
     fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
+
+    /**
+     * Called when an artificial move animation has ended
+     *
+     * @param grid The grid that is the main data source for the view.
+     * @param srcEntry The entry that the was the source of the animation
+     * @param srcEntry The entry that the was the destination of the animation
+     */
     fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 }

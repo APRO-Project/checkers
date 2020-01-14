@@ -1,10 +1,8 @@
 package com.cyberbot.checkers.ui.animator
 
-import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import com.cyberbot.checkers.game.GridEntry
-import java.lang.RuntimeException
 
 class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
     PieceAnimator(singleCellSize, sequential) {
@@ -43,6 +41,21 @@ class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
                 }
             )
         })
+    }
+
+    fun addPiece(
+        entry: GridEntry,
+        srcX: Float,
+        srcY: Float,
+        dstEntry: GridEntry,
+        srcScale: Float,
+        dstScale: Float = 1F
+    ) {
+
+        val dstX = (dstEntry.x + 0.5F) * singleCellSize
+        val dstY = (dstEntry.y + 0.5F) * singleCellSize
+
+        addPiece(entry, srcX, srcY, srcScale, dstX, dstY, dstScale)
     }
 
     fun addPiece(

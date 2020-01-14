@@ -3,9 +3,6 @@ package com.cyberbot.checkers.ui.animator
 import android.animation.Animator
 import android.animation.AnimatorSet
 import com.cyberbot.checkers.game.GridEntry
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
 abstract class PieceAnimator(protected val singleCellSize: Float, private var sequential: Boolean) {
     val animatedPieces = LinkedHashMap<GridEntry, AnimatedPieceValues>()
@@ -23,6 +20,11 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
         animatedPieces[entry] = (AnimatedPieceValues(cx, cy, scale))
     }
 
+    /**
+     *
+     * @param action The lambda function to invoke when any of the [AnimatedPieceValues] of the
+     * [GridEntry] have been updated
+     */
     fun addUpdateListener(action: (GridEntry, AnimatedPieceValues) -> Unit) {
         animatorUpdateListeners.add(object :
             AnimatorUpdateListener {
@@ -32,6 +34,11 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
         })
     }
 
+    /**
+     * Registers a new [AnimatorUpdateListener].
+     *
+     * @see [AnimatorUpdateListener]
+     */
     fun addUpdateListener(listener: AnimatorUpdateListener) {
         animatorUpdateListeners.add(listener)
     }
@@ -44,7 +51,13 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
         animatorUpdateListeners.remove(listener)
     }
 
-    fun createAnimator(): Animator {
+    /**
+     * Creates a new instance of an [AnimatorSet] that contains [Animator]s for all
+     * added pieces in either sequential or together mode, depending on [sequential] property
+     *
+     * @return The animator ready to be played
+     */
+    fun createAnimator(): AnimatorSet {
         return AnimatorSet().apply {
             if (sequential) {
                 playSequentially(animators)
@@ -54,6 +67,12 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
         }
     }
 
+    /**
+     * Convenience method for invoking all registered [AnimatorUpdateListener]s
+     *
+     * @param entry The updated entry
+     * @param values Values associated with the [entry]
+     */
     protected fun onUpdate(entry: GridEntry, values: AnimatedPieceValues) {
         animatorUpdateListeners.forEach {
             it.onUpdate(entry, values)
@@ -61,6 +80,16 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
     }
 }
 
+/**
+ * Interface definition for a callback to be invoked when any of the [AnimatedPieceValues]
+ * change for a particular [GridEntry].
+ */
 interface AnimatorUpdateListener {
+    /**
+     * Called when any of the [AnimatedPieceValues] change for the [entry]
+     *
+     * @param entry The updated entry
+     * @param values Values associated with the [entry]
+     */
     fun onUpdate(entry: GridEntry, values: AnimatedPieceValues)
 }
