@@ -1,29 +1,20 @@
 package com.cyberbot.checkers.ui.view
 
 import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnCancel
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.withTranslation
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.Grid
-import com.cyberbot.checkers.game.GridEntry
-import com.cyberbot.checkers.game.PieceType
-import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.game.*
 import com.cyberbot.checkers.ui.animator.*
 import java.lang.Float.max
 import java.lang.Float.min
@@ -452,6 +443,97 @@ class CheckersGridView(
         playerRadiusIcon = singleCellSize * playerSize * playerIconSize * 0.5F
     }
 
+    private fun handleMove(srcEntry: GridEntry, dstEntry: GridEntry) {
+        val destination = gridData.getDestination(srcEntry, dstEntry)
+            ?: throw java.lang.RuntimeException("Move here is not allowed")
+
+        movingEntry = null
+
+        if (destination.isCapture) {
+            handleMoveCapture(srcEntry, destination)
+        } else {
+            handleMoveNormal(srcEntry, destination)
+        }
+
+        moveY = 0F
+        moveX = 0F
+    }
+
+    private fun handleMoveNormal(srcEntry: GridEntry, destination: Destination) {
+        val dstEntry = destination.destinationEntry
+
+        currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
+            addPiece(srcEntry, dstEntry, moveX, moveY, playerScaleMoving)
+            addUpdateListener { _, _ ->
+                invalidate()
+            }
+
+            currentAnimator = createAnimator().apply {
+                doOnEnd {
+                    currentAnimator = null
+                    currentPieceAnimator = null
+                    userInteractionEnabled = true
+
+                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, dstEntry)
+                    invalidate()
+                }
+
+                duration = returnAnimationDuration
+                start()
+            }
+        }
+    }
+
+    private fun handleMoveCapture(srcEntry: GridEntry, destination: Destination) {
+        currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
+            destination.capturedPieces.forEach { addTargetPiece(it) }
+            setDestroyerPiece(
+                srcEntry,
+                moveX,
+                moveY,
+                playerScaleMoving,
+                destination.destinationEntry
+            )
+
+            pieceTypeRemovedListener = {
+                gridData.removeGridEntry(it)
+            }
+
+            gridVibrationListener = { x, y ->
+                canvasOffsetX = x * viewWidth
+                canvasOffsetY = y * viewWidth
+            }
+
+            soundEffectListener = {
+                Sound.playSound(context, it)
+            }
+
+            addUpdateListener { _, _ ->
+                invalidate()
+            }
+
+            currentAnimator = createAnimator().apply {
+                doOnEnd {
+                    currentAnimator = null
+                    currentPieceAnimator = null
+                    userInteractionEnabled = true
+
+                    moveAttemptListener?.onUserMoveEnd(
+                        gridData,
+                        srcEntry,
+                        destination.destinationEntry
+                    )
+
+                    canvasOffsetX = 0F
+                    canvasOffsetY = 0F
+                    invalidate()
+                }
+
+                start()
+            }
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -600,94 +682,15 @@ class CheckersGridView(
                 userInteractionEnabled = false
 
                 movingEntry?.let { srcEntry ->
-                    val entry =
-                        if (gridData.destinationAllowed(srcEntry, dstEntry)) {
-                            dstEntry
-                        } else {
-                            srcEntry
-                        }
-
-                    val dstX = (entry.x + 0.5F) * singleCellSize
-                    val dstY = (entry.y + 0.5F) * singleCellSize
-
-                    val srcX = moveX
-                    val srcY = moveY
-
-                    val destination = gridData.getDestination(srcEntry, entry)
-                        ?: throw java.lang.RuntimeException("Move here is not allowed")
-
-                    movingEntry = null
-                    moveY = 0F
-                    moveX = 0F
-
-                    if (destination.isCapture) {
-                        currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
-                            destination.capturedPieces.forEach { addTargetPiece(it) }
-                            setDestroyerPiece(
-                                srcEntry,
-                                srcX,
-                                srcY,
-                                playerScaleMoving,
-                                destination.destinationEntry
-                            )
-
-                            pieceTypeRemovedListener = {
-                                gridData.removeGridEntry(it)
-                            }
-
-                            gridVibrationListener = { x, y ->
-                                canvasOffsetX = x * viewWidth
-                                canvasOffsetY = y * viewWidth
-                            }
-
-                            soundEffectListener = {
-                                Sound.playSound(context, it)
-                            }
-
-                            addUpdateListener { _, _ ->
-                                invalidate()
-                            }
-
-                            currentAnimator = createAnimator().apply {
-                                doOnEnd {
-                                    currentAnimator = null
-                                    currentPieceAnimator = null
-                                    userInteractionEnabled = true
-
-                                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
-
-                                    canvasOffsetX = 0F
-                                    canvasOffsetY = 0F
-                                    invalidate()
-                                }
-
-                                start()
-                            }
-                        }
+                    val entry = if (gridData.destinationAllowed(srcEntry, dstEntry)) {
+                        dstEntry
                     } else {
-                        currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
-                            addPiece(srcEntry, srcX, srcY, playerScaleMoving, dstX, dstY, 1F)
-                            addUpdateListener { _, _ ->
-                                invalidate()
-                            }
-
-                            currentAnimator = createAnimator().apply {
-                                doOnEnd {
-                                    currentAnimator = null
-                                    currentPieceAnimator = null
-                                    userInteractionEnabled = true
-
-                                    moveAttemptListener?.onUserMoveEnd(gridData, srcEntry, entry)
-                                    invalidate()
-                                }
-
-                                duration = returnAnimationDuration
-                                start()
-                            }
-                        }
+                        srcEntry
                     }
-                }
 
+                    handleMove(srcEntry, entry)
+
+                }
                 return true
             }
         }
