@@ -3,9 +3,6 @@ package com.cyberbot.checkers.game;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 public class GridEntry {
     private final int x;
     private final int y;

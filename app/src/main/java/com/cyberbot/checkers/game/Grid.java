@@ -92,6 +92,26 @@ public class Grid implements Iterable<GridEntry> {
         throw new RuntimeException("Entry (" + x + ", " + y + ") not found in Grid");
     }
 
+    public void removeGridEntry(GridEntry entry) {
+        int index = gridEntries.indexOf(entry);
+        gridEntries.get(index).setPlayer(PlayerNum.NOPLAYER);
+        gridEntries.get(index).setPieceType(PieceType.UNASSIGNED);
+    }
+
+    public Destination getDestination(GridEntry src, GridEntry dst) {
+        if(src != dst) {
+            ArrayList<Destination> destinations = getMovableEntries(src.getPlayer()).get(src);
+            if(destinations == null) return null;
+
+            for(Destination destination: destinations) {
+                if(destination.getDestinationEntry() == dst) return destination;
+            }
+        }
+        else return new Destination(src);
+
+        return null;
+    }
+
     public boolean destinationAllowed(GridEntry src, GridEntry dst) {
         if(src == dst) return true;
 

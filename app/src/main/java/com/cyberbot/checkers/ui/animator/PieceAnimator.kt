@@ -3,9 +3,12 @@ package com.cyberbot.checkers.ui.animator
 import android.animation.Animator
 import android.animation.AnimatorSet
 import com.cyberbot.checkers.game.GridEntry
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
 
 abstract class PieceAnimator(protected val singleCellSize: Float, private var sequential: Boolean) {
-    val animatedPieces = HashMap<GridEntry, AnimatedPieceValues>()
+    val animatedPieces = LinkedHashMap<GridEntry, AnimatedPieceValues>()
     protected val animatorUpdateListeners = ArrayList<AnimatorUpdateListener>()
     protected val animators = ArrayList<Animator>()
 
