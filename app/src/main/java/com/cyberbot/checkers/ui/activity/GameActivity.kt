@@ -3,9 +3,7 @@ package com.cyberbot.checkers.ui.activity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
-import com.cyberbot.checkers.fx.getRandomAiThinkSoundRes
-import com.cyberbot.checkers.fx.getRandomMoveSoundRes
-import com.cyberbot.checkers.fx.play
+import com.cyberbot.checkers.fx.*
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.GridEntry
 import com.cyberbot.checkers.game.PlayerNum
@@ -24,10 +22,10 @@ class GameActivity : AppCompatActivity() {
         val pref = Preferences.fromContext(this)
         val gridData = Grid.fromPreferences(pref)
         checkersGridView.gridData = gridData
+        checkersGridView.playerTurn = PlayerNum.SECOND
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
-                play(this@GameActivity, getRandomMoveSoundRes())
                 move_player2.text = getString(R.string.game_player_move_in_progress)
             }
 
@@ -47,23 +45,21 @@ class GameActivity : AppCompatActivity() {
 
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
-                    val src: GridEntry = grid.filter {
-                        it.player == PlayerNum.FIRST && grid.calculateAllowedMoves(it, false).isNotEmpty()
-                    }.random()
+                    val src: GridEntry = grid.getMovableEntries(PlayerNum.FIRST).keys.random()
 
                     val dst: GridEntry = grid.filter {
-                        it != src && gridData.moveAllowed(src, it)
+                        it != src && gridData.destinationAllowed(src, it)
                     }.random()
 
-                    checkersGridView.allowSecondPlayerMove = false
+                    checkersGridView.playerTurn = PlayerNum.NOPLAYER
                     move_player2.text = getString(R.string.game_ai_thinking)
                     Thread {
-                        play(this@GameActivity, getRandomAiThinkSoundRes())
+                        Sound.playSound(this@GameActivity, SoundType.AI_THINK)
                         Thread.sleep(1000)
                         runOnUiThread {
                             checkersGridView.attemptMove(src, dst)
                         }
-                        checkersGridView.allowSecondPlayerMove = true
+                        checkersGridView.playerTurn = PlayerNum.SECOND
                     }.start()
                 }
             }
