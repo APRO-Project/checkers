@@ -347,10 +347,9 @@ public class Grid implements Iterable<GridEntry> {
         return movableEntries;
     }
 
-      int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
+      int getValue(){
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
-            if (gridEntry.getPlayer() == playerNum) {
 
                 //count pieces
 
@@ -371,28 +370,6 @@ public class Grid implements Iterable<GridEntry> {
                 } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
                     value += Math.abs((gridEntry.getY() - getSize()) / 2);
                 }
-            } else if (gridEntry.getPlayer() == adversaryNum) {
-
-                //count pieces
-
-                value -= 10;
-
-                if (gridEntry.getPieceType() == PieceType.KING) {
-                    value -= 30;
-                }
-
-                //prioritize sides
-
-                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
-
-                //prioritize forward
-
-                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                    value -= gridEntry.getY() / 2;
-                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
-                }
-            }
         }
         return value;
     }
@@ -409,7 +386,7 @@ public class Grid implements Iterable<GridEntry> {
         return grid;
     }
 
-    public boolean win(PlayerNum enemy){
+    boolean win(PlayerNum enemy){
         int enemyNo = 0;
         for (GridEntry gridEntry : gridEntries){
             if (gridEntry.getPlayer() == enemy){
@@ -419,7 +396,7 @@ public class Grid implements Iterable<GridEntry> {
         return enemyNo == 0;
     }
 
-    public boolean loose(PlayerNum player){
+    boolean loose(PlayerNum player){
         int playerNo = 0;
         for (GridEntry gridEntry : gridEntries){
             if (gridEntry.getPlayer() == player){

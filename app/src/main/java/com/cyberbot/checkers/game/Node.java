@@ -10,6 +10,15 @@ public class Node {
     private boolean isAiPlayer;
     private ArrayList<Node> children;
     private int depth;
+    private int score;
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
 
     public GridEntry getSrc() {
         return src;
@@ -71,5 +80,15 @@ public class Node {
         this.grid = grid;
         this.isAiPlayer = isAiPlayer;
         this.depth = depth;
+    }
+
+    public int getValue(){
+        return grid.getValue();
+    }
+
+    public Node(GridEntry src, Destination dst , int score) {
+        this.src = src;
+        this.dst = dst;
+        this.score = score;
     }
 }
