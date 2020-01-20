@@ -10,6 +10,4 @@ public class Tree {
     public void setRoot(Node root) {
         this.root = root;
     }
-
-
 }
