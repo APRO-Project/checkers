@@ -1,5 +1,7 @@
 package com.cyberbot.checkers.game;
 
+import android.net.wifi.p2p.WifiP2pManager;
+
 import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -395,8 +397,35 @@ public class Grid implements Iterable<GridEntry> {
         return value;
     }
 
-    static Grid simulateMove(Grid grid, Move move) {
-        grid.attemptMove(move.getStart(), move.getEnd());
+    static Grid simulateMove(Grid grid, GridEntry src, Destination dst) {
+        grid.getEntryByCoords(src.getX(), src.getY()).setPlayer(PlayerNum.NOPLAYER);
+        grid.getEntryByCoords(src.getX(), src.getY()).setPieceType(PieceType.UNASSIGNED);
+        for (GridEntry destroyed:dst.getCapturedPieces()){
+            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPieceType(PieceType.UNASSIGNED);
+            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPlayer(PlayerNum.NOPLAYER);
+        }
+        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPlayer(PlayerNum.NOPLAYER);
+        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPieceType(PieceType.UNASSIGNED);
         return grid;
+    }
+
+    public boolean win(PlayerNum enemy){
+        int enemyNo = 0;
+        for (GridEntry gridEntry : gridEntries){
+            if (gridEntry.getPlayer() == enemy){
+                enemyNo++;
+            }
+        }
+        return enemyNo == 0;
+    }
+
+    public boolean loose(PlayerNum player){
+        int playerNo = 0;
+        for (GridEntry gridEntry : gridEntries){
+            if (gridEntry.getPlayer() == player){
+                playerNo++;
+            }
+        }
+        return playerNo == 0;
     }
 }
