@@ -36,7 +36,7 @@ public class AiPlayer {
                 for (Destination dst : Objects.requireNonNull(possibleMoves.get(src))) {
                     Node newNode = new Node(src, dst, Grid.simulateMove(parentNode.getGrid(), src, dst), !parentNode.isAiPlayer(), parentNode.getDepth() + 1);
                     parentNode.addChild(newNode);
-                    if (!newNode.getGrid().win(aiNum) && !newNode.getGrid().loose(aiNum)) {
+                    if (!newNode.getGrid().won(adversaryNum) && !newNode.getGrid().lost(aiNum)) {
                         buildTree(newNode, maxDepth);
                     }
                 }

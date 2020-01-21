@@ -1,7 +1,5 @@
 package com.cyberbot.checkers.game;
 
-import android.net.wifi.p2p.WifiP2pManager;
-
 import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -386,7 +384,10 @@ public class Grid implements Iterable<GridEntry> {
         return grid;
     }
 
-    boolean win(PlayerNum enemy){
+    boolean won(PlayerNum enemy){
+        if (getMovableEntries(enemy).isEmpty()){
+            return true;
+        }
         int enemyNo = 0;
         for (GridEntry gridEntry : gridEntries){
             if (gridEntry.getPlayer() == enemy){
@@ -396,7 +397,10 @@ public class Grid implements Iterable<GridEntry> {
         return enemyNo == 0;
     }
 
-    boolean loose(PlayerNum player){
+    boolean lost(PlayerNum player){
+        if (getMovableEntries(player).isEmpty()){
+            return true;
+        }
         int playerNo = 0;
         for (GridEntry gridEntry : gridEntries){
             if (gridEntry.getPlayer() == player){
