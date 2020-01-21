@@ -396,7 +396,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return value;
     }
 
-    public static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
+    static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
         GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
