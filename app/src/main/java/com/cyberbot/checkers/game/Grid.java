@@ -346,27 +346,51 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     }
 
     int getValue() {
+
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
-
-            //count pieces
-
-            value += 10;
-
-            if (gridEntry.getPieceType() == PieceType.KING) {
-                value += 30;
-            }
-
-            //prioritize sides
-
-            value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
-
-            //prioritize forward
-
             if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                value += gridEntry.getY() / 2;
+
+                //count pieces
+
+                value += 10;
+
+                if (gridEntry.getPieceType() == PieceType.KING) {
+                    value += 30;
+                }
+
+                //prioritize sides
+
+                value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+
+                //prioritize forward
+
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value += gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value += Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
             } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                value += Math.abs((gridEntry.getY() - getSize()) / 2);
+
+                //count pieces
+
+                value -= 10;
+
+                if (gridEntry.getPieceType() == PieceType.KING) {
+                    value -= 30;
+                }
+
+                //prioritize sides
+
+                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+
+                //prioritize forward
+
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value -= gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
             }
         }
         return value;
