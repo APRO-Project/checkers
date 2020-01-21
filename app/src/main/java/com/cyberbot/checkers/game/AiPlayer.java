@@ -71,7 +71,7 @@ public class AiPlayer {
 
     private int minmax(Node node, int depth, boolean maximizingPlayer) {
         if (depth == 0) {
-            return node.getValue();
+            return node.getValue(aiNum, adversaryNum);
         } else {
             if (maximizingPlayer) {
                 int value = -999999;

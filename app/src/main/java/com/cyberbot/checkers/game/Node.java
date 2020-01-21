@@ -82,8 +82,8 @@ public class Node {
         this.depth = depth;
     }
 
-    public int getValue(){
-        return grid.getValue();
+    public int getValue(PlayerNum aiNum, PlayerNum adversaryNum){
+        return grid.getValue(aiNum, adversaryNum);
     }
 
     public Node(GridEntry src, Destination dst , int score) {

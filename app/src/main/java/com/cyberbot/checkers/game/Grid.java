@@ -345,11 +345,11 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return movableEntries;
     }
 
-    int getValue() {
+    int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
 
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
-            if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+            if (gridEntry.getPlayer() == playerNum) {
 
                 //count pieces
 
@@ -370,7 +370,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
                     value += Math.abs((gridEntry.getY() - getSize()) / 2);
                 }
-            } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+            } else if (gridEntry.getPlayer() == adversaryNum) {
 
                 //count pieces
 
