@@ -345,34 +345,58 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return movableEntries;
     }
 
-    int getValue() {
+    int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
+
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
+            if (gridEntry.getPlayer() == playerNum) {
 
-            //count pieces
+                //count pieces
 
-            value += 10;
+                value += 10;
 
-            if (gridEntry.getPieceType() == PieceType.KING) {
-                value += 30;
-            }
+                if (gridEntry.getPieceType() == PieceType.KING) {
+                    value += 30;
+                }
 
-            //prioritize sides
+                //prioritize sides
 
-            value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+                value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
 
-            //prioritize forward
+                //prioritize forward
 
-            if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                value += gridEntry.getY() / 2;
-            } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                value += Math.abs((gridEntry.getY() - getSize()) / 2);
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value += gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value += Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
+            } else if (gridEntry.getPlayer() == adversaryNum) {
+
+                //count pieces
+
+                value -= 10;
+
+                if (gridEntry.getPieceType() == PieceType.KING) {
+                    value -= 30;
+                }
+
+                //prioritize sides
+
+                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+
+                //prioritize forward
+
+                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                    value -= gridEntry.getY() / 2;
+                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
+                }
             }
         }
         return value;
     }
 
-    public static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
+    static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
         GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
