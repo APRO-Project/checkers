@@ -345,10 +345,9 @@ public class Grid implements Iterable<GridEntry> {
         return movableEntries;
     }
 
-      int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
+      int getValue(){
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
-            if (gridEntry.getPlayer() == playerNum) {
 
                 //count pieces
 
@@ -369,34 +368,45 @@ public class Grid implements Iterable<GridEntry> {
                 } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
                     value += Math.abs((gridEntry.getY() - getSize()) / 2);
                 }
-            } else if (gridEntry.getPlayer() == adversaryNum) {
-
-                //count pieces
-
-                value -= 10;
-
-                if (gridEntry.getPieceType() == PieceType.KING) {
-                    value -= 30;
-                }
-
-                //prioritize sides
-
-                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
-
-                //prioritize forward
-
-                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                    value -= gridEntry.getY() / 2;
-                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
-                }
-            }
         }
         return value;
     }
 
-    static Grid simulateMove(Grid grid, Move move) {
-        grid.attemptMove(move.getStart(), move.getEnd());
+    static Grid simulateMove(Grid grid, GridEntry src, Destination dst) {
+        grid.getEntryByCoords(src.getX(), src.getY()).setPlayer(PlayerNum.NOPLAYER);
+        grid.getEntryByCoords(src.getX(), src.getY()).setPieceType(PieceType.UNASSIGNED);
+        for (GridEntry destroyed:dst.getCapturedPieces()){
+            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPieceType(PieceType.UNASSIGNED);
+            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPlayer(PlayerNum.NOPLAYER);
+        }
+        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPlayer(PlayerNum.NOPLAYER);
+        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPieceType(PieceType.UNASSIGNED);
         return grid;
+    }
+
+    boolean won(PlayerNum enemy){
+        if (getMovableEntries(enemy).isEmpty()){
+            return true;
+        }
+        int enemyNo = 0;
+        for (GridEntry gridEntry : gridEntries){
+            if (gridEntry.getPlayer() == enemy){
+                enemyNo++;
+            }
+        }
+        return enemyNo == 0;
+    }
+
+    boolean lost(PlayerNum player){
+        if (getMovableEntries(player).isEmpty()){
+            return true;
+        }
+        int playerNo = 0;
+        for (GridEntry gridEntry : gridEntries){
+            if (gridEntry.getPlayer() == player){
+                playerNo++;
+            }
+        }
+        return playerNo == 0;
     }
 }
