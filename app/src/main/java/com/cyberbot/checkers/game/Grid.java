@@ -1,7 +1,10 @@
 package com.cyberbot.checkers.game;
 
 import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.cyberbot.checkers.preferences.Preferences;
 
@@ -31,10 +34,21 @@ public class Grid implements Iterable<GridEntry> {
         return playerRows;
     }
 
+    /**
+     * Default constructor, that creates Grid object
+     * with 10x10 board size and 4 player rows
+     */
     public Grid() {
         this(10, 4);
     }
 
+    /**
+     * Constructs Grid object with default Preferences
+     *
+     * @param size Size of the board. Board's dimensions will be [size x size]
+     * @param playerRows Number of player rows - must not be greater than the
+     *                   size / 2 - 1
+     */
     public Grid(int size, int playerRows) {
         if (size - (playerRows * 2) < 2) {
             throw new IllegalArgumentException("There should be 2 no-player rows on the board at minimum");
@@ -61,6 +75,16 @@ public class Grid implements Iterable<GridEntry> {
         }
     }
 
+    /**
+     * Constructs Grid object
+     *
+     * @param size See Grid(int, int)
+     * @param playerRows See Grid(int, int)
+     * @param canMoveBackwards Allow ordinary pieces to move backwards
+     * @param canCaptureBackwards Allow ordinary pieces to capture backwards
+     * @param flyingKing Allow king to move by multiple steps
+     * @param mandatoryCapture Force captures
+     */
     public Grid(int size, int playerRows, boolean canMoveBackwards, boolean canCaptureBackwards, boolean flyingKing, boolean mandatoryCapture) {
         this(size, playerRows);
         this.canMoveBackwards = canMoveBackwards;
@@ -69,6 +93,16 @@ public class Grid implements Iterable<GridEntry> {
         this.mandatoryCapture = mandatoryCapture;
     }
 
+    /**
+     * Constructs Grid object based on given Preferences
+     *
+     * @param prefs Preferences object. Cannot be null
+     * @return Grid object
+     *
+     * @see Preferences
+     */
+    @NotNull
+    @Contract("_ -> new")
     public static Grid fromPreferences(@NotNull Preferences prefs) {
         return new Grid(
                 prefs.getGridSize(),
@@ -80,8 +114,16 @@ public class Grid implements Iterable<GridEntry> {
         );
     }
 
+    /**
+     * Look for specific GridEntry in gridEntries
+     *
+     * @param x x-coordinate of searched GridEntry
+     * @param y y-coordinate of searched GridEntry
+     * @return GridEntry object if such exists in gridEntries. Otherwise, a RuntimeException is thrown
+     * @throws IndexOutOfBoundsException When called with x or y greater than size or less than zero
+     */
     public GridEntry getEntryByCoords(int x, int y) throws IndexOutOfBoundsException {
-        if (x >= size || y >= size) {
+        if (x >= size || y >= size || x < 0 || y < 0) {
             throw new IndexOutOfBoundsException("Coordinates (" + x + ", " + y + ") out of bounds for grid with size " + size);
         }
 
@@ -92,13 +134,30 @@ public class Grid implements Iterable<GridEntry> {
         throw new RuntimeException("Entry (" + x + ", " + y + ") not found in Grid");
     }
 
-    public void removeGridEntry(GridEntry entry) {
+    /**
+     * Sets player as NOPLAYER and pieceType as UNASSIGNED for given GridEntry
+     *
+     * @param entry GridEntry to be "removed"
+     *
+     * @see PlayerNum
+     * @see PieceType
+     */
+    public void removeGridEntry(@NotNull GridEntry entry) {
         int index = gridEntries.indexOf(entry);
+        // TODO: Throw RuntimeException when entry not found
         gridEntries.get(index).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(index).setPieceType(PieceType.UNASSIGNED);
     }
 
-    public Destination getDestination(GridEntry src, GridEntry dst) {
+    /**
+     * Get Destination object based on given src and dst entries
+     *
+     * @param src Source entry. Cannot be null
+     * @param dst Destination entry. Cannot be null
+     * @return
+     */
+    @Nullable
+    public Destination getDestination(@NotNull GridEntry src, @NotNull GridEntry dst) {
         if(src != dst) {
             ArrayList<Destination> destinations = getMovableEntries(src.getPlayer()).get(src);
             if(destinations == null) return null;
