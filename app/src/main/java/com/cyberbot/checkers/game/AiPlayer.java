@@ -2,19 +2,19 @@ package com.cyberbot.checkers.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class AiPlayer {
-    private PlayerNum aiNum;
-    private PlayerNum adversaryNum;
+    private final PlayerNum aiNum;
+    private final PlayerNum adversaryNum;
     private GridEntry aiMoveSource;
     private Destination aiMoveDestination;
     private Tree gameTree;
-    private int lvl = 4;
+    private final int lvl;
 
-    public AiPlayer(PlayerNum aiNum, PlayerNum adversaryNum) {
+    public AiPlayer(PlayerNum aiNum, PlayerNum adversaryNum, int lvl) {
         this.aiNum = aiNum;
         this.adversaryNum = adversaryNum;
+        this.lvl = lvl;
     }
 
     private void buildTree(Grid rootGrid, int maxDepth) {
@@ -26,15 +26,20 @@ public class AiPlayer {
 
     private void buildTree(Node parentNode, int maxDepth) {
         if (parentNode.getDepth() < maxDepth) {
-            HashMap<GridEntry, ArrayList<Destination>> possibleMoves;
+            final HashMap<GridEntry, ArrayList<Destination>> possibleMoves;
             if (parentNode.isAiPlayer()) {
                 possibleMoves = parentNode.getGrid().getMovableEntries(aiNum);
             } else {
                 possibleMoves = parentNode.getGrid().getMovableEntries(adversaryNum);
             }
+
             for (GridEntry src : possibleMoves.keySet()) {
-                for (Destination dst : Objects.requireNonNull(possibleMoves.get(src))) {
-                    Node newNode = new Node(src, dst, Grid.simulateMove(parentNode.getGrid(), src, dst), !parentNode.isAiPlayer(), parentNode.getDepth() + 1);
+                for (Destination dst : possibleMoves.get(src)) {
+                    Node newNode = new Node(src, dst,
+                            Grid.simulateMove(parentNode.getGrid(), src, dst),
+                            !parentNode.isAiPlayer(), parentNode.getDepth() + 1
+                    );
+
                     parentNode.addChild(newNode);
                     if (!newNode.getGrid().won(adversaryNum) && !newNode.getGrid().lost(aiNum)) {
                         buildTree(newNode, maxDepth);
@@ -44,20 +49,20 @@ public class AiPlayer {
         }
     }
 
-    public void setAiMove(Grid grid) {
+    public void executeMove(Grid grid) {
         buildTree(grid, lvl);
         for (Node node : gameTree.getRoot().getChildren()) {
-            node.setScore(minmax(node, lvl-1, false));
+            node.setScore(minmax(node, lvl - 1, false));
         }
         aiMoveSource = findBestChild(gameTree.getRoot()).getSrc();
         aiMoveDestination = findBestChild(gameTree.getRoot()).getDst();
 
     }
 
-    private Node findBestChild(Node parent){
-        Node bestNode = new Node(null,null,-999999);
-        for (Node child:parent.getChildren()){
-            if (child.getScore()>bestNode.getScore()){
+    private Node findBestChild(Node parent) {
+        Node bestNode = new Node(null, null, -999999);
+        for (Node child : parent.getChildren()) {
+            if (child.getScore() > bestNode.getScore()) {
                 bestNode = child;
             }
         }

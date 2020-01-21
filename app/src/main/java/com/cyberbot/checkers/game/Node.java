@@ -8,7 +8,7 @@ public class Node {
     private Destination dst;
     private Grid grid;
     private boolean isAiPlayer;
-    private ArrayList<Node> children;
+    private List<Node> children = new ArrayList<>();
     private int depth;
     private int score;
 
@@ -60,7 +60,7 @@ public class Node {
         isAiPlayer = aiPlayer;
     }
 
-    public ArrayList<Node> getChildren() {
+    public List<Node> getChildren() {
         return children;
     }
 
