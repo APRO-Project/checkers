@@ -1,21 +1,24 @@
 package com.cyberbot.checkers.game;
 
 import androidx.annotation.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 import com.cyberbot.checkers.preferences.Preferences;
 
+import org.apache.commons.lang3.SerializationUtils;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-public class Grid implements Iterable<GridEntry> {
+public class Grid implements Iterable<GridEntry>, Serializable {
     private final int size;
     private final int playerRows;
     private final ArrayList<GridEntry> gridEntries;
-    private HashMap<GridEntry, ArrayList<Destination>> movableEntriesCache;
+    private transient HashMap<GridEntry, ArrayList<Destination>> movableEntriesCache;
 
     // Preferences
     private boolean canMoveBackwards = false;
@@ -99,38 +102,37 @@ public class Grid implements Iterable<GridEntry> {
     }
 
     public Destination getDestination(GridEntry src, GridEntry dst) {
-        if(src != dst) {
+        if (src != dst) {
             ArrayList<Destination> destinations = getMovableEntries(src.getPlayer()).get(src);
-            if(destinations == null) return null;
+            if (destinations == null) return null;
 
-            for(Destination destination: destinations) {
-                if(destination.getDestinationEntry() == dst) return destination;
+            for (Destination destination : destinations) {
+                if (destination.getDestinationEntry() == dst) return destination;
             }
-        }
-        else return new Destination(src);
+        } else return new Destination(src);
 
         return null;
     }
 
     public boolean destinationAllowed(GridEntry src, GridEntry dst) {
-        if(src == dst) return true;
+        if (src == dst) return true;
 
         getMovableEntries(src.getPlayer());
 
         ArrayList<Destination> destinations = movableEntriesCache.get(src);
-        if(destinations == null) return false;
+        if (destinations == null) return false;
 
-        for(Destination destination: destinations) {
-            if(destination.getDestinationEntry() == dst) return true;
+        for (Destination destination : destinations) {
+            if (destination.getDestinationEntry() == dst) return true;
         }
 
         return false;
     }
 
     public boolean attemptMove(GridEntry src, GridEntry dst) {
-        if(src == dst) return false;
+        if (src == dst) return false;
 
-        if(!destinationAllowed(src, dst)) return false;
+        if (!destinationAllowed(src, dst)) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
@@ -205,10 +207,9 @@ public class Grid implements Iterable<GridEntry> {
     private HashSet<GridEntry> getAllowedMoves(@NotNull GridEntry entry) {
         HashSet<GridEntry> allowedMoves = new HashSet<>();
 
-        if(entry.getPieceType() == PieceType.ORDINARY) {
+        if (entry.getPieceType() == PieceType.ORDINARY) {
             allowedMoves = calculateOrdinaryPieceMoves(entry);
-        }
-        else if(entry.getPieceType() == PieceType.KING) {
+        } else if (entry.getPieceType() == PieceType.KING) {
             // TODO: Calculate king moves
         }
 
@@ -226,23 +227,22 @@ public class Grid implements Iterable<GridEntry> {
                 }
             }
         }
-      
+
         return allowedMoves;
     }
 
     private ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry) {
         CaptureChain root = new CaptureChain(entry, null, null);
 
-        if(entry.getPieceType() == PieceType.ORDINARY) {
+        if (entry.getPieceType() == PieceType.ORDINARY) {
             calculateOrdinaryPieceCaptures(root, entry.getPlayer());
-        }
-        else if(entry.getPieceType() == PieceType.KING) {
+        } else if (entry.getPieceType() == PieceType.KING) {
             // TODO: Calculate king captures
         }
 
         ArrayList<CaptureChain> allowedCaptures;
 
-        if(mandatoryCapture) allowedCaptures = root.getLongestCaptures();
+        if (mandatoryCapture) allowedCaptures = root.getLongestCaptures();
         else allowedCaptures = root.getAllCaptures();
 
         return allowedCaptures;
@@ -251,9 +251,9 @@ public class Grid implements Iterable<GridEntry> {
     private void calculateOrdinaryPieceCaptures(@NotNull CaptureChain lastCapture, final PlayerNum player) {
         GridEntry lastLocation = lastCapture.getLocationAfterCapture();
 
-        for(GridEntry adjEntry: getAdjacentEntries(lastLocation)) {
+        for (GridEntry adjEntry : getAdjacentEntries(lastLocation)) {
             // Check if can capture backwards or adjacent piece is ahead
-            if(canCaptureBackwards
+            if (canCaptureBackwards
                     || (lastLocation.getPlayer() == PlayerNum.FIRST && lastLocation.getY() < adjEntry.getY())
                     || (lastLocation.getPlayer() == PlayerNum.SECOND && lastLocation.getY() > adjEntry.getY())) {
 
@@ -345,65 +345,77 @@ public class Grid implements Iterable<GridEntry> {
         return movableEntries;
     }
 
-      int getValue(){
+    int getValue() {
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
 
-                //count pieces
+            //count pieces
 
-                value += 10;
+            value += 10;
 
-                if (gridEntry.getPieceType() == PieceType.KING) {
-                    value += 30;
-                }
+            if (gridEntry.getPieceType() == PieceType.KING) {
+                value += 30;
+            }
 
-                //prioritize sides
+            //prioritize sides
 
-                value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+            value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
 
-                //prioritize forward
+            //prioritize forward
 
-                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                    value += gridEntry.getY() / 2;
-                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                    value += Math.abs((gridEntry.getY() - getSize()) / 2);
-                }
+            if (gridEntry.getPlayer() == PlayerNum.FIRST) {
+                value += gridEntry.getY() / 2;
+            } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
+                value += Math.abs((gridEntry.getY() - getSize()) / 2);
+            }
         }
         return value;
     }
 
-    static Grid simulateMove(Grid grid, GridEntry src, Destination dst) {
-        grid.getEntryByCoords(src.getX(), src.getY()).setPlayer(PlayerNum.NOPLAYER);
-        grid.getEntryByCoords(src.getX(), src.getY()).setPieceType(PieceType.UNASSIGNED);
-        for (GridEntry destroyed:dst.getCapturedPieces()){
-            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPieceType(PieceType.UNASSIGNED);
-            grid.getEntryByCoords(destroyed.getX(),destroyed.getY()).setPlayer(PlayerNum.NOPLAYER);
+    public static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
+        Grid grid = SerializationUtils.clone(startGrid);
+
+        GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
+
+        srcEntry.setPlayer(PlayerNum.NOPLAYER);
+        srcEntry.setPieceType(PieceType.UNASSIGNED);
+
+        for (GridEntry destroyed : destination.getCapturedPieces()) {
+            GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
+
+            destroyedEntry.setPieceType(PieceType.UNASSIGNED);
+            destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
         }
-        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPlayer(PlayerNum.NOPLAYER);
-        grid.getEntryByCoords(dst.getDestinationEntry().getX(),dst.getDestinationEntry().getY()).setPieceType(PieceType.UNASSIGNED);
+
+        int dstX = destination.getDestinationEntry().getX();
+        int dstY = destination.getDestinationEntry().getY();
+
+        GridEntry dst = grid.getEntryByCoords(dstX, dstY);
+        dst.setPlayer(PlayerNum.NOPLAYER);
+        dst.setPieceType(PieceType.UNASSIGNED);
         return grid;
     }
 
-    boolean won(PlayerNum enemy){
-        if (getMovableEntries(enemy).isEmpty()){
+    boolean won(PlayerNum enemy) {
+        if (getMovableEntries(enemy).isEmpty()) {
             return true;
         }
         int enemyNo = 0;
-        for (GridEntry gridEntry : gridEntries){
-            if (gridEntry.getPlayer() == enemy){
+        for (GridEntry gridEntry : gridEntries) {
+            if (gridEntry.getPlayer() == enemy) {
                 enemyNo++;
             }
         }
         return enemyNo == 0;
     }
 
-    boolean lost(PlayerNum player){
-        if (getMovableEntries(player).isEmpty()){
+    boolean lost(PlayerNum player) {
+        if (getMovableEntries(player).isEmpty()) {
             return true;
         }
         int playerNo = 0;
-        for (GridEntry gridEntry : gridEntries){
-            if (gridEntry.getPlayer() == player){
+        for (GridEntry gridEntry : gridEntries) {
+            if (gridEntry.getPlayer() == player) {
                 playerNo++;
             }
         }

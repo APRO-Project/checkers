@@ -3,7 +3,9 @@ package com.cyberbot.checkers.game;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class GridEntry {
+import java.io.Serializable;
+
+public class GridEntry implements Serializable {
     private final int x;
     private final int y;
     private PlayerNum player = PlayerNum.NOPLAYER;
@@ -50,9 +52,9 @@ public class GridEntry {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if(obj == null)
+        if (obj == null)
             return false;
-        if(this.getClass() != obj.getClass())
+        if (this.getClass() != obj.getClass())
             return false;
 
         return this.x == ((GridEntry) obj).x && this.y == ((GridEntry) obj).y;
