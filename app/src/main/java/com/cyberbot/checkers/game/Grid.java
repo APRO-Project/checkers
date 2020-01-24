@@ -1,7 +1,5 @@
 package com.cyberbot.checkers.game;
 
-import androidx.annotation.NonNull;
-
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -254,7 +252,7 @@ public class Grid implements Iterable<GridEntry> {
         return true;
     }
 
-    @NonNull
+    @NotNull
     @Override
     public Iterator<GridEntry> iterator() {
         return gridEntries.iterator();
