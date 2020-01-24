@@ -2,8 +2,8 @@ package com.cyberbot.checkers.game;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import org.jetbrains.annotations.Contract;
+import java.io.Serializable;
 
 /**
  * Represents a player piece or a board space, that is unoccupied by none of the players. Stores
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Contract;
  * @see PlayerNum
  * @see PieceType
  */
-public class GridEntry {
+public class GridEntry implements Serializable {
     private final int x;
     private final int y;
     private PlayerNum player = PlayerNum.NOPLAYER;
@@ -72,9 +72,9 @@ public class GridEntry {
     @Override
     @Contract(value = "null -> false", pure = true)
     public boolean equals(@Nullable Object obj) {
-        if(obj == null)
+        if (obj == null)
             return false;
-        if(this.getClass() != obj.getClass())
+        if (this.getClass() != obj.getClass())
             return false;
 
         return this.x == ((GridEntry) obj).x && this.y == ((GridEntry) obj).y;

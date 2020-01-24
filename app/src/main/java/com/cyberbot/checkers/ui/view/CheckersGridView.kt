@@ -496,7 +496,7 @@ class CheckersGridView(
         val dstEntry = destination.destinationEntry
 
         currentPieceAnimator = MoveScaleAnimator(singleCellSize).apply {
-            addPiece(srcEntry, dstEntry, moveX, moveY, playerScaleMoving)
+            addPiece(srcEntry, moveX, moveY, dstEntry, playerScaleMoving)
             addUpdateListener { _, _ ->
                 invalidate()
             }

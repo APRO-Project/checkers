@@ -61,7 +61,6 @@ class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
     fun addPiece(
         srcEntry: GridEntry,
         dstEntry: GridEntry,
-        singleCellSize: Float,
         srcScale: Float = 1F,
         dstScale: Float = 1F
     ) {

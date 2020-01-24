@@ -1,13 +1,13 @@
 package com.cyberbot.checkers.game;
 
-public class Tree {
+class Tree {
     private Node root;
 
-    public Node getRoot() {
+    Node getRoot() {
         return root;
     }
 
-    public void setRoot(Node root) {
+    void setRoot(Node root) {
         this.root = root;
     }
 }
