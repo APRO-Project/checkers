@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import com.cyberbot.checkers.preferences.Preferences;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
