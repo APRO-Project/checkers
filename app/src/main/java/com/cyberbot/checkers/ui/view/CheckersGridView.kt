@@ -394,10 +394,13 @@ class CheckersGridView(
         }
 
         val destination = gridData.getDestination(srcEntry, dstEntry)
+        if (destination === null) {
+            throw RuntimeException("Should not be null, since already checked with destinationAllowed")
+        }
 
         if (destination.isCapture) {
             currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
-                destination.capturedPieces.forEach { addTargetPiece(it) }
+                destination.capturedPieces?.forEach { addTargetPiece(it) }
                 setDestroyerPiece(
                     srcEntry,
                     playerScaleMoving,
@@ -439,7 +442,7 @@ class CheckersGridView(
         } else {
             currentPieceAnimator = FullMoveAnimator(singleCellSize).apply {
                 addPiece(srcEntry, dstEntry, 1F, playerScaleMoving)
-                addUpdateListener { _, v ->
+                addUpdateListener { _, _ ->
                     invalidate()
                 }
 
@@ -519,7 +522,7 @@ class CheckersGridView(
 
     private fun handleMoveCapture(srcEntry: GridEntry, destination: Destination) {
         currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
-            destination.capturedPieces.forEach { addTargetPiece(it) }
+            destination.capturedPieces?.forEach { addTargetPiece(it) }
             setDestroyerPiece(
                 srcEntry,
                 moveX,
