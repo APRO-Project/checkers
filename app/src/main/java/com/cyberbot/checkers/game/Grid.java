@@ -375,7 +375,7 @@ public class Grid implements Iterable<GridEntry> {
      */
     @NotNull
     private ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry) {
-        CaptureChain root = new CaptureChain(entry, null, null);
+        CaptureChain root = new CaptureChain(entry);
 
         if(entry.getPieceType() == PieceType.ORDINARY) {
             calculateOrdinaryPieceCaptures(root, entry.getPlayer());
