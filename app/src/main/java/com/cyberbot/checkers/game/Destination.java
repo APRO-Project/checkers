@@ -1,6 +1,7 @@
 package com.cyberbot.checkers.game;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
@@ -31,15 +32,15 @@ public class Destination {
     }
 
     /**
-     * Sets given {@code destinationEntry} as the destination. This constructor should be called
-     * when moveing the piece doesn't involve captures.
+     * Sets given {@code destinationEntry} as the destination. Other members are set to null.
+     * This constructor should be called when moveing the piece doesn't involve captures.
      *
      * @param destinationEntry Destination {@link GridEntry}. Cannot be null
      */
     Destination(@NotNull GridEntry destinationEntry) {
         this.destinationEntry = destinationEntry;
-        capturedPieces = new ArrayList<>();
-        intermediateSteps = new ArrayList<>();
+        capturedPieces = null;
+        intermediateSteps = null;
     }
 
     /**
@@ -51,14 +52,17 @@ public class Destination {
         return capturedPieces != null && capturedPieces.size() > 0;
     }
 
+    @Nullable
     public ArrayList<GridEntry> getCapturedPieces() {
         return capturedPieces;
     }
 
+    @NotNull
     public GridEntry getDestinationEntry() {
         return destinationEntry;
     }
 
+    @Nullable
     public ArrayList<GridEntry> getIntermediateSteps() {
         return intermediateSteps;
     }
