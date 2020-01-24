@@ -53,11 +53,11 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * Constructs {@link Grid} object with default {@link Preferences}.
      *
      * @param size Size of the board. Board's dimensions will be [{@code size} x {@code size}].
-     *             Minimum value is 8
+     *             Minimum value is 3
      * @param playerRows Number of player rows - must not be greater than {@code size / 2 - 1}
      */
     public Grid(int size, int playerRows) {
-        if(size < 8) {
+        if(size < 3) {
             throw new IllegalArgumentException("Size of the board should be at least 8");
         }
         if(size - (playerRows * 2) < 2) {
