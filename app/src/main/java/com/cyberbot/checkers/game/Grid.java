@@ -13,6 +13,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Represents a grid in the checkers game. Basically, it is used to store {@link GridEntry} objects,
+ * that represent player pieces and also to perform several game logic tasks such as possible
+ * moves and captures calculations.
+ *
+ * It also implements {@link Iterable} so one can iterate conveniently over its entries.
+ */
 public class Grid implements Iterable<GridEntry> {
     private final int size;
     private final int playerRows;
