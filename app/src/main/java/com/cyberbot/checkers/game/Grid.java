@@ -602,8 +602,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         int dstY = destination.getDestinationEntry().getY();
 
         GridEntry dst = grid.getEntryByCoords(dstX, dstY);
-        dst.setPlayer(PlayerNum.NOPLAYER);
-        dst.setPieceType(PieceType.UNASSIGNED);
+        dst.setPlayer(src.getPlayer());
+        dst.setPieceType(src.getPieceType());
 
         return grid;
     }
