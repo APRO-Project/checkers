@@ -317,20 +317,28 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * Get all allowed moves for specified {@code entry}. Moves are calculated differently
      * based on {@link PieceType}.
      *
+     * If {@code entry} is {@link PieceType#UNASSIGNED}, then a {@link IllegalArgumentException}
+     * is thrown.
+     *
      * @param entry {@link GridEntry} we want to get moves for
      * @return {@link ArrayList} of allowed moves
      *
      * @see Grid#calculateOrdinaryPieceMoves(GridEntry)
+     * @see Grid#calculateKingMoves(GridEntry)
      */
     @NotNull
     private ArrayList<GridEntry> getAllowedMoves(@NotNull GridEntry entry) {
+        if(entry.getPieceType() == PieceType.UNASSIGNED) {
+            throw new IllegalArgumentException("Attempt to get allowed moves for UNASSIGNED piece type");
+        }
+
         ArrayList<GridEntry> allowedMoves = new ArrayList<>();
 
         if (entry.getPieceType() == PieceType.ORDINARY) {
             allowedMoves = calculateOrdinaryPieceMoves(entry);
         }
         else if(entry.getPieceType() == PieceType.KING) {
-            // TODO: Calculate king moves (and update javadoc)
+            allowedMoves = calculateKingMoves(entry);
         }
 
         return allowedMoves;
@@ -359,6 +367,49 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                         || (entry.getPlayer() == PlayerNum.FIRST && entry.getY() < adjEntry.getY())
                         || (entry.getPlayer() == PlayerNum.SECOND && entry.getY() > adjEntry.getY())) {
                     allowedMoves.add(adjEntry);
+                }
+            }
+        }
+
+        return allowedMoves;
+    }
+
+    /**
+     * Calculate allowed moves for {@link PieceType#KING}. {@link Grid#flyingKing} perference
+     * is taken into account during calculations.
+     *
+     * If supplied {@code entry} has different {@code pieceType} than {@link PieceType#KING},
+     * a {@link IllegalArgumentException} is thrown.
+     *
+     * @param entry {@link GridEntry} we want to calculate moves for
+     * @return {@link ArrayList} of calculated moves
+     */
+    @NotNull
+    private ArrayList<GridEntry> calculateKingMoves(@NotNull GridEntry entry) {
+        if(entry.getPieceType() != PieceType.KING) {
+            throw new IllegalArgumentException("Attempt to calculate king moves for non-king");
+        }
+
+        ArrayList<GridEntry> allowedMoves = new ArrayList<>();
+        for(GridEntry adjEntry: getAdjacentEntries(entry)) {
+            if(adjEntry.getPlayer() == PlayerNum.NOPLAYER) {
+                allowedMoves.add(adjEntry);
+
+                // Move diagonally in direction implied by ajdEntry to discover more free entries
+                if(flyingKing) {
+                    final int directionX = adjEntry.getX() - entry.getX();
+                    final int directionY = adjEntry.getY() - entry.getY();
+
+                    int nextX = adjEntry.getX() + directionX;
+                    int nextY = adjEntry.getY() + directionY;
+                    while(nextX >= 0 && nextX < size && nextY >= 0 && nextY < size) {
+                        GridEntry nextEntry = getEntryByCoords(nextX, nextY);
+                        if(nextEntry.getPlayer() == PlayerNum.NOPLAYER) {
+                            allowedMoves.add(nextEntry);
+                            nextX += directionX;
+                            nextY += directionY;
+                        } else break;
+                    }
                 }
             }
         }
