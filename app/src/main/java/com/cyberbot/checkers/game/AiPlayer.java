@@ -3,8 +3,6 @@ package com.cyberbot.checkers.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.cyberbot.checkers.game.Grid.simulateMove;
-
 public class AiPlayer {
     private final PlayerNum aiNum;
     private final PlayerNum adversaryNum;
@@ -38,7 +36,7 @@ public class AiPlayer {
             for (GridEntry src : possibleMoves.keySet()) {
                 for (Destination dst : possibleMoves.get(src)) {
                     Node newNode = new Node(src, dst,
-                            simulateMove(parentNode.getGrid(), src, dst),
+                            Grid.simulateMove(parentNode.getGrid(), src, dst),
                             !parentNode.isAiPlayer(), parentNode.getDepth() + 1
                     );
 
@@ -56,8 +54,9 @@ public class AiPlayer {
         for (Node node : gameTree.getRoot().getChildren()) {
             node.setScore(minmax(node, lvl - 1, false));
         }
-        aiMoveSource = findBestChild(gameTree.getRoot()).getSrc();
-        aiMoveDestination = findBestChild(gameTree.getRoot()).getDst();
+        final Node bestChild = findBestChild(gameTree.getRoot());
+        aiMoveSource = bestChild.getSrc();
+        aiMoveDestination = bestChild.getDst();
     }
 
     private Node findBestChild(Node parent) {
