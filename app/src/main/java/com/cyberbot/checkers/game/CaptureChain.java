@@ -45,7 +45,7 @@ public class CaptureChain {
      *
      * @param capture A capture to be added
      */
-    void addNextCapture(CaptureChain capture) {
+    void addNextCapture(@NotNull CaptureChain capture) {
         nextCaptures.add(capture);
     }
 
@@ -107,7 +107,7 @@ public class CaptureChain {
      * @param entry {@link GridEntry} we want to search for
      * @return {@code true} if {@code entry} was captured, {@code false} otherwise
      */
-    boolean checkIfEntryCaptured(GridEntry entry) {
+    boolean checkIfEntryCaptured(@NotNull GridEntry entry) {
         for(CaptureChain prevCapture = this; prevCapture != null; prevCapture = prevCapture.lastCapture) {
             if(prevCapture.capturedPiece == entry) return true;
         }
