@@ -586,11 +586,14 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         srcEntry.setPlayer(PlayerNum.NOPLAYER);
         srcEntry.setPieceType(PieceType.UNASSIGNED);
 
-        for (GridEntry destroyed : destination.getCapturedPieces()) {
-            GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
+        ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
+        if(capturedPieces != null) {
+            for (GridEntry destroyed : destination.getCapturedPieces()) {
+                GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
 
-            destroyedEntry.setPieceType(PieceType.UNASSIGNED);
-            destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
+                destroyedEntry.setPieceType(PieceType.UNASSIGNED);
+                destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
+            }
         }
 
         int dstX = destination.getDestinationEntry().getX();
