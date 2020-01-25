@@ -542,18 +542,18 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 value += 20;
 
                 if (gridEntry.getPieceType() == PieceType.KING) {
-                value += 80;
+                    value += 80;
                 }
 
                 // Prioritize sides
-                value += Math.abs(gridEntry.getX()+1 - (size/2));
+                value += Math.abs(gridEntry.getX() + 1 - (size / 2));
 
                 //Prioritize forward movement
 
-                if (playerNum == PlayerNum.FIRST){
-                    value += gridEntry.getY()+1;
-                } else if (playerNum == PlayerNum.SECOND){
-                    value += size - (gridEntry.getY()+1);
+                if (playerNum == PlayerNum.FIRST) {
+                    value += gridEntry.getY() + 1;
+                } else if (playerNum == PlayerNum.SECOND) {
+                    value += size - (gridEntry.getY() + 1);
                 }
 
             } else if (gridEntry.getPlayer() == adversaryNum) {
@@ -565,14 +565,14 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 }
 
                 // Prioritize sides
-                value -= Math.abs(gridEntry.getX()+1 - (size/2));
+                value -= Math.abs(gridEntry.getX() + 1 - (size / 2));
 
                 //Prioritize forward movement
 
-                if (adversaryNum == PlayerNum.FIRST){
-                    value -= gridEntry.getY()+1;
-                } else if (adversaryNum == PlayerNum.SECOND){
-                    value -= size - (gridEntry.getY()+1);
+                if (adversaryNum == PlayerNum.FIRST) {
+                    value -= gridEntry.getY() + 1;
+                } else if (adversaryNum == PlayerNum.SECOND) {
+                    value -= size - (gridEntry.getY() + 1);
                 }
             }
         }
@@ -589,7 +589,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         srcEntry.setPieceType(PieceType.UNASSIGNED);
 
         ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
-        if(capturedPieces != null) {
+        if (capturedPieces != null) {
             for (GridEntry destroyed : destination.getCapturedPieces()) {
                 GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
 
