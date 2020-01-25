@@ -119,7 +119,10 @@ class GridTest {
         Grid grid = new Grid(size, playerRows);
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
-        srcEntry.setPlayer(PlayerNum.FIRST);  // In order to not trigger InvalidArgumentException
+
+        // In order to not trigger InvalidArgumentException
+        srcEntry.setPlayer(PlayerNum.FIRST);
+        srcEntry.setPieceType(PieceType.ORDINARY);
 
         assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
@@ -131,7 +134,10 @@ class GridTest {
         Grid grid = new Grid(size, playerRows);
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
-        srcEntry.setPlayer(PlayerNum.FIRST);  // In order to not trigger InvalidArgumentException
+
+        // In order to not trigger InvalidArgumentException
+        srcEntry.setPlayer(PlayerNum.FIRST);
+        srcEntry.setPieceType(PieceType.ORDINARY);
 
         assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
