@@ -1,7 +1,7 @@
 package com.cyberbot.checkers.ui.activity
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
 import com.cyberbot.checkers.game.PlayerNum
@@ -21,10 +21,12 @@ class SettingsActivity : AppCompatActivity() {
 
         settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
         settingsAutoCaptureSwitch.isChecked = prefs.autoCapture
-        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
         settingsCaptureBackwardSwitch.isChecked = prefs.canCaptureBackwards
         settingsMoveBackwardSwitch.isChecked = prefs.canMoveBackwards
         settingsFlyingKingSwitch.isChecked = prefs.flyingKing
+
+        settingsMoveBackwardSwitch.isEnabled = prefs.flyingKing
+        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
 
         settingsMandatoryCapturesSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.mandatoryCapture = isChecked
@@ -48,7 +50,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         settingsFlyingKingSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.flyingKing= isChecked
+            prefs.flyingKing = isChecked
+            settingsMoveBackwardSwitch.isEnabled = isChecked
             prefs.save(this)
         }
 
