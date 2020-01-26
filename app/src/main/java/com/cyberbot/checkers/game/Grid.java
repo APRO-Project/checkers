@@ -234,6 +234,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * {@code src == dst}, it isn't executed.
      *
      * Moving a piece includes swapping {@code player} and {@code pieceType} of involved entries.
+     * Also, when a piece get promotion if it's available.
      *
      * If any of entries is not found in {@link Grid#gridEntries}, a {@link RuntimeException} is
      * thrown.
@@ -241,6 +242,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * @param src Source entry. Cannot be null
      * @param dst Destination entry. Cannot be null
      * @return {@code true} is move was executed or {@code false} if it's not allowed
+     *
+     * @see Grid#promotionAvailable(GridEntry, GridEntry)
      */
     public boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst) {
         if(src == dst) return false;
