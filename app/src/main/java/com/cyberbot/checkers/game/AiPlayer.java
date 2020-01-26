@@ -17,14 +17,14 @@ public class AiPlayer {
         this.lvl = lvl;
     }
 
-    private void buildTree(Grid rootGrid, int maxDepth) {
+    private void buildTree(Grid rootGrid) {
         gameTree = new Tree();
-        Node root = new Node(rootGrid, true, 0);
+        Node root = new Node(rootGrid, true, lvl);
         gameTree.setRoot(root);
     }
 
     public void executeMove(Grid grid) {
-        buildTree(grid, lvl);
+        buildTree(grid);
         gameTree.getRoot().setScore(alphaBeta(gameTree.getRoot(), lvl, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, true));
         final Node bestChild = findBestChild(gameTree.getRoot());
         aiMoveSource = bestChild.getSrc();
