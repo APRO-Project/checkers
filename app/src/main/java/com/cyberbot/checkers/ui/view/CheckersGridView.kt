@@ -108,6 +108,13 @@ class CheckersGridView(
             invalidate()
         }
 
+    var moveHintLineColor: Int = 0
+        set(value) {
+            field = value
+            paintMoveHintLine.color = value
+            invalidate()
+        }
+
     private val paintGridColorMoveAllowed = Paint(0).apply {
         color = gridColorMoveAllowed
         style = Paint.Style.FILL
@@ -163,6 +170,14 @@ class CheckersGridView(
         color = playerOutlineColor2
         style = Paint.Style.FILL
     }
+
+
+    private val paintMoveHintLine = Paint(0).apply {
+        color = moveHintLineColor
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeWidth = hintLineWidthCalculated
+    }
     //</editor-fold>
 
     private var viewMeasureType: Int = 0
@@ -171,6 +186,11 @@ class CheckersGridView(
     private var playerRadius: Float = 0F
     private var playerRadiusOutline: Float = 0F
     private var playerRadiusIcon: Float = 0F
+    private var hintLineWidthCalculated: Float = 0F
+        set(value) {
+            field = value
+            paintMoveHintLine.strokeWidth = value
+        }
     private var userInteractionEnabled = true
 
     var soundFxEnabled = true
@@ -219,6 +239,8 @@ class CheckersGridView(
             field = value
             invalidate()
         }
+
+    var hintLineWidth: Float = 0.1F
 
     /**
      * Main data source for displaying and interacting with.
@@ -304,6 +326,10 @@ class CheckersGridView(
                         R.styleable.CheckersGridView_player_outline_color1,
                         context.getColor(R.color.game_color_player_outline2)
                     )
+                moveHintLineColor = getColor(
+                    R.styleable.CheckersGridView_move_hint_color,
+                    context.getColor(R.color.game_color_move_hint_line)
+                )
                 viewMeasureType =
                     getInteger(R.styleable.CheckersGridView_view_size, 0)
             } finally {
@@ -475,6 +501,7 @@ class CheckersGridView(
         playerRadius = singleCellSize * playerSize * 0.5F
         playerRadiusOutline = singleCellSize * playerSize * playerOutlineSize * 0.5F
         playerRadiusIcon = singleCellSize * playerSize * playerIconSize * 0.5F
+        hintLineWidthCalculated = singleCellSize * hintLineWidth
     }
 
     private fun handleMove(srcEntry: GridEntry, dstEntry: GridEntry) {
@@ -574,14 +601,6 @@ class CheckersGridView(
         canvas.withTranslation(canvasOffsetX, canvasOffsetY) {
             gridData.forEach {
                 drawGridEntry(this, it)
-
-                currentPieceAnimator.let { animator ->
-                    if (animator == null || !animator.containsEntry(it)) {
-                        val cx = (it.x + 0.5F) * singleCellSize
-                        val cy = (it.y + 0.5F) * singleCellSize
-                        drawPlayer(this, it, cx, cy)
-                    }
-                }
             }
 
             movingEntry?.let { srcEntry ->
@@ -591,7 +610,12 @@ class CheckersGridView(
 
                 if (userInteracting) {
                     val allowedEntries = gridData.getMovableEntries(playerTurn)
+                    var destination: Destination? = null
                     allowedEntries[movingEntry]?.forEach {
+                        if (it.destinationEntry == dstEntry) {
+                            destination = it
+                        }
+
                         drawGridEntry(
                             this, it.destinationEntry,
                             if (it.isCapture) paintGridColorCaptureAllowedHint
@@ -609,10 +633,40 @@ class CheckersGridView(
 
                     drawGridEntry(this, srcEntry, paintGridColorMoveSource)
 
+
+                    var pCx = (srcEntry.x + 0.5F) * singleCellSize
+                    var pCy = (srcEntry.y + 0.5F) * singleCellSize
+                    destination?.intermediateSteps?.forEach {
+                        val cx = (it.x + 0.5F) * singleCellSize
+                        val cy = (it.y + 0.5F) * singleCellSize
+
+                        drawLine(pCx, pCy, cx, cy, paintMoveHintLine)
+
+                        pCx = cx
+                        pCy = cy
+                    }
+
                     val cx = (dstEntry.x + 0.5F) * singleCellSize
                     val cy = (dstEntry.y + 0.5F) * singleCellSize
+
+                    destination?.let {
+                        if (it.isCapture) {
+                            drawLine(pCx, pCy, cx, cy, paintMoveHintLine)
+                        }
+                    }
+
                     if (dstEntry != srcEntry) {
                         drawPlayer(this, dstEntry, cx, cy)
+                    }
+                }
+            }
+
+            gridData.forEach {
+                currentPieceAnimator.let { animator ->
+                    if (animator == null || !animator.containsEntry(it)) {
+                        val cx = (it.x + 0.5F) * singleCellSize
+                        val cy = (it.y + 0.5F) * singleCellSize
+                        drawPlayer(this, it, cx, cy)
                     }
                 }
             }
