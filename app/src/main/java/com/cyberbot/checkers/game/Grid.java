@@ -76,7 +76,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return new Grid(
                 prefs.getGridSize(),
                 prefs.getPlayerRows(),
-                prefs.getCanMoveBackwards(),
+                // canMoveBackwards is always false when flyingKing is false
+                prefs.getFlyingKing() && prefs.getCanMoveBackwards(),
                 prefs.getCanCaptureBackwards(),
                 prefs.getFlyingKing(),
                 prefs.getMandatoryCapture()
