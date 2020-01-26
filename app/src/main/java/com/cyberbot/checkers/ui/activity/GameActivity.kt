@@ -22,6 +22,8 @@ class GameActivity : AppCompatActivity() {
         val TURN_KEY = "grid"
     }
 
+    private lateinit var aiPlayer: AiPlayer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -38,7 +40,7 @@ class GameActivity : AppCompatActivity() {
             checkersGridView.playerTurn = PlayerNum.SECOND
         }
 
-        val aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, 2)
+        aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, 2)
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
@@ -61,24 +63,28 @@ class GameActivity : AppCompatActivity() {
 
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
-                    checkersGridView.playerTurn = PlayerNum.NOPLAYER
-                    move_player2.text = getString(R.string.game_ai_thinking)
-                    Thread {
-                        Sound.playSound(this@GameActivity, SoundType.AI_THINK)
-                        val startThinking = System.currentTimeMillis()
-                        aiPlayer.executeMove(grid)
-                        val endThinking = System.currentTimeMillis()
-                        Thread.sleep(max(0, 1000 - (endThinking - startThinking)))
-                        runOnUiThread {
-                            val src = aiPlayer.aiMoveSource
-                            val dst = aiPlayer.aiMoveDestination.destinationEntry
-                            checkersGridView.attemptMove(src, dst)
-                        }
-                        checkersGridView.playerTurn = PlayerNum.SECOND
-                    }.start()
+                    executeAiMove()
                 }
             }
         }
+    }
+
+    private fun executeAiMove() {
+        checkersGridView.playerTurn = PlayerNum.NOPLAYER
+        move_player2.text = getString(R.string.game_ai_thinking)
+        Thread {
+            Sound.playSound(this@GameActivity, SoundType.AI_THINK)
+            val startThinking = System.currentTimeMillis()
+            aiPlayer.executeMove(checkersGridView.gridData)
+            val endThinking = System.currentTimeMillis()
+            Thread.sleep(max(0, 1000 - (endThinking - startThinking)))
+            runOnUiThread {
+                val src = aiPlayer.aiMoveSource
+                val dst = aiPlayer.aiMoveDestination.destinationEntry
+                checkersGridView.attemptMove(src, dst)
+            }
+            checkersGridView.playerTurn = PlayerNum.SECOND
+        }.start()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

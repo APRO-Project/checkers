@@ -213,8 +213,6 @@ class CheckersGridView(
      * Width of the player's icon if it exists,  represented as a fraction of a the player's radius.
      * Values greater then [playerOutlineSize] are not recommended since they will appear to
      * stick outside of the player. The icon is drawn in the same color as the outline.
-     *
-     *
      */
     var playerIconSize: Float = 0.75F
         set(value) {
@@ -781,20 +779,20 @@ interface MoveAttemptListener {
     fun onUserMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 
     /**
-     * Called when an artificial move animation has been started
+     * Called when an artificial move animation has been started/
      *
      * @param grid The grid that is the main data source for the view.
      * @param srcEntry The entry that the was the source of the animation
-     * @param srcEntry The entry that the was the destination of the animation
+     * @param srcEntry The entry that the was the destination of the animation.
      */
     fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 
     /**
-     * Called when an artificial move animation has ended
+     * Called when an artificial move animation has ended.
      *
      * @param grid The grid that is the main data source for the view.
-     * @param srcEntry The entry that the was the source of the animation
-     * @param srcEntry The entry that the was the destination of the animation
+     * @param srcEntry The entry that the was the source of the animation.
+     * @param srcEntry The entry that the was the destination of the animation.
      */
     fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry)
 }
