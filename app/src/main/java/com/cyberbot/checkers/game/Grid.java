@@ -241,6 +241,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * If any of entries is not found in {@link Grid#gridEntries}, a {@link RuntimeException} is
      * thrown.
      *
+     * It also checks whether the game came to end or not.
+     *
      * @param src Source entry. Cannot be null
      * @param dst Destination entry. Cannot be null
      * @param deleteCapturedPieces Specify if captured pieces should be deleted from the board or not
@@ -249,6 +251,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * is null when invoked with {@code checkIfMoveAllowed} set to {@code false}
      *
      * @see Grid#promotionAvailable(GridEntry, GridEntry)
+     * @see Grid#isGameOver()
      */
     private boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst, boolean deleteCapturedPieces, boolean checkIfMoveAllowed) {
         if(checkIfMoveAllowed && (src == dst || !destinationAllowed(src, dst))) return false;
@@ -646,6 +649,15 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return src.getPlayer() == PlayerNum.FIRST ? dst.getY() == size-1 : dst.getY() == 0;
     }
 
+    /**
+     * Check if the game has come to end.
+     *
+     * @return {@link GameEnd} object with information about game ending or null if the game hasn't
+     * ended yet
+     *
+     * @see GameEnd
+     */
+    @Nullable
     public GameEnd isGameOver() {
         if(moveCount == 25) {
             return new GameEnd(PlayerNum.NOPLAYER, "25 king-only moves without piece moves and captures");
@@ -790,6 +802,14 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return movableEntries;
     }
 
+    /**
+     * Overload of {@link Grid#getMovableEntries(PlayerNum, boolean)} that uses cache by default.
+     *
+     * @param player Player we want to get movable entries for
+     * @return {@link HashMap}, where {@link GridEntry} is the key and represents source of the move
+     * and {@link ArrayList} of {@link Destination} that represents all possible destinations for the
+     * source entry
+     */
     @NotNull
     public HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player) {
         return getMovableEntries(player, true);
