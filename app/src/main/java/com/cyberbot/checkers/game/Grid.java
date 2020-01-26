@@ -27,6 +27,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     private final ArrayList<GridEntry> gridEntries;
     private transient HashMap<GridEntry, ArrayList<Destination>> movableEntriesCache;
 
+    private int moveCount = 0;
+
     // Preferences
     private boolean canMoveBackwards = false;
     private boolean canCaptureBackwards = true;
@@ -253,6 +255,24 @@ public class Grid implements Iterable<GridEntry>, Serializable {
 
         if(movableEntriesCache == null) return false;
 
+        Destination destination = getDestination(src, dst);
+        if(destination != null) {
+            if(deleteCapturedPieces) {
+                ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
+                if(capturedPieces != null) {
+                    for(GridEntry captured: capturedPieces) {
+                        final int idx = gridEntries.indexOf(captured);
+                        gridEntries.get(idx).setPlayer(PlayerNum.NOPLAYER);
+                        gridEntries.get(idx).setPieceType(PieceType.UNASSIGNED);
+                    }
+                }
+            }
+
+            // Count king moves (used in deciding whether to end the game with a draw)
+            if(src.getPieceType() == PieceType.KING && !destination.isCapture()) ++moveCount;
+            else moveCount = 0;  // Clear counter when an ordinary piece moved or there was a capture
+        }
+
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
 
@@ -268,21 +288,12 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         gridEntries.get(srcIdx).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(srcIdx).setPieceType(PieceType.UNASSIGNED);
 
-        if(deleteCapturedPieces) {
-            Destination destination = getDestination(src, dst);
-            if(destination != null) {
-                ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
-                if(capturedPieces != null) {
-                    for(GridEntry captured: capturedPieces) {
-                        final int idx = gridEntries.indexOf(captured);
-                        gridEntries.get(idx).setPlayer(PlayerNum.NOPLAYER);
-                        gridEntries.get(idx).setPieceType(PieceType.UNASSIGNED);
-                    }
-                }
-            }
-        }
-
         movableEntriesCache = null;
+
+        GameEnd gameEnd = isGameOver();
+        if(gameEnd != null) {
+            System.out.println("Game over: " + gameEnd.getReason());
+        }
 
         return true;
     }
@@ -635,6 +646,60 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return src.getPlayer() == PlayerNum.FIRST ? dst.getY() == size-1 : dst.getY() == 0;
     }
 
+    public GameEnd isGameOver() {
+        if(moveCount == 25) {
+            return new GameEnd(PlayerNum.NOPLAYER, "25 king-only moves without piece moves and captures");
+        }
+
+        int firstPlayerPieces = 0;
+        int firstPlayerKings = 0;
+
+        int secondPlayerPieces = 0;
+        int secondPlayerKings = 0;
+
+        for(GridEntry entry: gridEntries) {
+            if(entry.getPlayer() == PlayerNum.FIRST) {
+                if(entry.getPieceType() == PieceType.KING) ++firstPlayerKings;
+                else ++firstPlayerPieces;
+            }
+            else if(entry.getPlayer() == PlayerNum.SECOND) {
+                if(entry.getPieceType() == PieceType.KING) ++secondPlayerKings;
+                else ++secondPlayerPieces;
+            }
+        }
+
+        if(secondPlayerKings + secondPlayerPieces == 0) {
+            return new GameEnd(PlayerNum.FIRST, "Opponent has no pieces remaining");
+        }
+
+        if(firstPlayerKings + firstPlayerPieces == 0) {
+            return new GameEnd(PlayerNum.SECOND, "Opponent has no pieces remaining");
+        }
+
+        if(firstPlayerKings == 1 && secondPlayerKings == 1 && firstPlayerPieces == 0 && secondPlayerPieces == 0) {
+            return new GameEnd(PlayerNum.NOPLAYER, "King vs King endgame");
+        }
+
+        final int firstPlayerMovablePieces = getMovableEntries(PlayerNum.FIRST, false).size();
+        final int secondPlayerMovablePieces = getMovableEntries(PlayerNum.SECOND, false).size();
+
+        if(firstPlayerMovablePieces == 0 && secondPlayerMovablePieces == 0) {
+            return new GameEnd(PlayerNum.NOPLAYER, "No more moves to make");
+        }
+
+        if(firstPlayerMovablePieces == 0) {
+            return new GameEnd(PlayerNum.FIRST, "Opponent has no movable pieces remaining");
+        }
+
+        if(secondPlayerMovablePieces == 0) {
+            return new GameEnd(PlayerNum.SECOND, "Opponent has no movable pieces remaining");
+        }
+
+        movableEntriesCache = null;
+
+        return null;
+    }
+
     /**
      * Get all movable entries for given {@code player}. This includes all moves and captures,
      * respecting the {@link Grid#mandatoryCapture} preference.
@@ -647,17 +712,18 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * is thrown.
      *
      * @param player Player we want to get movable entries for
+     * @param useCache Whether to use {@link Grid#movableEntriesCache} to restore/save results
      * @return {@link HashMap}, where {@link GridEntry} is the key and represents source of the move
      * and {@link ArrayList} of {@link Destination} that represents all possible destinations for the
      * source entry
      */
     @NotNull
-    public HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player) {
+    private HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player, boolean useCache) {
         if(player == PlayerNum.NOPLAYER) {
             throw new IllegalArgumentException("Cannot get movable entries for NOPLAYER");
         }
 
-        if (movableEntriesCache != null) return movableEntriesCache;
+        if(useCache && movableEntriesCache != null) return movableEntriesCache;
 
         HashMap<GridEntry, ArrayList<Destination>> movableEntries = new HashMap<>();
         HashMap<GridEntry, ArrayList<CaptureChain>> possibleCaptures = new HashMap<>();
@@ -719,9 +785,14 @@ public class Grid implements Iterable<GridEntry>, Serializable {
             }
         }
 
-        movableEntriesCache = movableEntries;
+        if(useCache) movableEntriesCache = movableEntries;
 
         return movableEntries;
+    }
+
+    @NotNull
+    public HashMap<GridEntry, ArrayList<Destination>> getMovableEntries(PlayerNum player) {
+        return getMovableEntries(player, true);
     }
 
     int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
