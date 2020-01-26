@@ -126,6 +126,18 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     }
 
     /**
+     * Tells if given coordinates are valid indexes for {@link Grid#gridEntries}.
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return {@code true} if coordinates are valid, {@code false} otherwise
+     */
+    @Contract(pure = true)
+    private boolean coordsValid(int x, int y) {
+        return x >= 0 && x < size && y >= 0 && y < size;
+    }
+
+    /**
      * Look for specific {@link GridEntry} in {@link Grid#gridEntries}.
      *
      * @param x x-coordinate of searched {@link GridEntry}
@@ -137,7 +149,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      */
     @NotNull
     public GridEntry getEntryByCoords(int x, int y) throws IndexOutOfBoundsException {
-        if (x >= size || y >= size || x < 0 || y < 0) {
+        if (!coordsValid(x, y)) {
             throw new IndexOutOfBoundsException("Coordinates (" + x + ", " + y + ") out of bounds for grid with size " + size);
         }
 
@@ -376,7 +388,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     }
 
     /**
-     * Calculate allowed moves for {@link PieceType#KING}. {@link Grid#flyingKing} perference
+     * Calculate allowed moves for {@link PieceType#KING}. {@link Grid#flyingKing} preference
      * is taken into account during calculations.
      *
      * If supplied {@code entry} has different {@code pieceType} than {@link PieceType#KING},
@@ -403,7 +415,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
 
                     int nextX = adjEntry.getX() + directionX;
                     int nextY = adjEntry.getY() + directionY;
-                    while(nextX >= 0 && nextX < size && nextY >= 0 && nextY < size) {
+                    while(coordsValid(nextX, nextY)) {
                         GridEntry nextEntry = getEntryByCoords(nextX, nextY);
                         if(nextEntry.getPlayer() == PlayerNum.NOPLAYER) {
                             allowedMoves.add(nextEntry);
@@ -420,10 +432,13 @@ public class Grid implements Iterable<GridEntry>, Serializable {
 
     /**
      * Get all allowed captures for specified {@code entry}. Captures are calculated differently
-     * base on {@link PieceType}
+     * based on {@link PieceType}
      *
      * @param entry {@link GridEntry} we want to get captures for
      * @return {@link ArrayList} of allowed captures
+     *
+     * @see Grid#calculateOrdinaryPieceCaptures(CaptureChain, PlayerNum)
+     * @see Grid#calculateKingCaptures(CaptureChain, PlayerNum)
      */
     @NotNull
     private ArrayList<CaptureChain> getAllowedCaptures(@NotNull GridEntry entry) {
@@ -431,10 +446,9 @@ public class Grid implements Iterable<GridEntry>, Serializable {
 
         if (entry.getPieceType() == PieceType.ORDINARY) {
             calculateOrdinaryPieceCaptures(root, entry.getPlayer());
-
         }
         else if(entry.getPieceType() == PieceType.KING) {
-            // TODO: Calculate king captures (and update javadoc)
+            calculateKingCaptures(root, entry.getPlayer());
         }
 
         ArrayList<CaptureChain> allowedCaptures;
@@ -476,13 +490,11 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                         && adjEntry.getPlayer() != player
                         && !lastCapture.checkIfEntryCaptured(adjEntry)) {
 
-                    int entryAfterX = adjEntry.getX() + (adjEntry.getX() - lastLocation.getX());
-                    int entryAfterY = adjEntry.getY() + (adjEntry.getY() - lastLocation.getY());
+                    final int entryAfterX = adjEntry.getX() + (adjEntry.getX() - lastLocation.getX());
+                    final int entryAfterY = adjEntry.getY() + (adjEntry.getY() - lastLocation.getY());
 
                     // Check if entry after captured piece is on the Grid
-                    if (entryAfterX >= 0 && entryAfterX < size
-                            && entryAfterY >= 0 && entryAfterY < size) {
-
+                    if (coordsValid(entryAfterX, entryAfterY)) {
                         GridEntry entryAfter = getEntryByCoords(entryAfterX, entryAfterY);
                         // Check if entry after captured piece belongs to nobody
                         if (entryAfter.getPlayer() == PlayerNum.NOPLAYER) {
@@ -490,6 +502,81 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                             lastCapture.addNextCapture(nextCapture);
                             calculateOrdinaryPieceCaptures(nextCapture, player);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Calculate allowed captures for {@link PieceType#KING}. {@link Grid#flyingKing} preference
+     * is taken into account during calculations.
+     *
+     * Method doesn't return any value - calculations are preformed recursively and results are
+     * stored in {@code lastCapture} parameters.
+     *
+     * There's no checks if the method was invoked for {@link PieceType#KING} because of recursive
+     * nature of it, so the caller should be sure to call it correctly. Also, the caller needs
+     * to be sure, that {@code player} is not set to {@link PlayerNum#NOPLAYER}.
+     *
+     * @param lastCapture {@link CaptureChain} object representing last capture that has taken place.
+     *                                        It should have been set to root capture when first invoked
+     * @param player {@link PlayerNum} representing the player who is capturing
+     *
+     * @see CaptureChain
+     */
+    private void calculateKingCaptures(@NotNull CaptureChain lastCapture, final PlayerNum player) {
+        GridEntry lastLocation = lastCapture.getLocationAfterCapture();
+
+        for(GridEntry adjEntry: getAdjacentEntries(lastLocation)) {
+            final int directionX = adjEntry.getX() - lastLocation.getX();
+            final int directionY = adjEntry.getY() - lastLocation.getY();
+
+            GridEntry enemyEntry = null;
+
+            // Move diagonally to find enemy piece in range
+            if(adjEntry.getPlayer() == PlayerNum.NOPLAYER && flyingKing) {
+                int nextX = adjEntry.getX();
+                int nextY = adjEntry.getY();
+
+                while(coordsValid((nextX += directionX), (nextY += directionY))) {
+                    GridEntry entryAfter = getEntryByCoords(nextX, nextY);
+
+                    if(entryAfter.getPlayer() != PlayerNum.NOPLAYER) {
+                        if(entryAfter.getPlayer() != player) enemyEntry = entryAfter;
+                        break;
+                    }
+                }
+            }
+            // Enemy piece is adjacent
+            else if(adjEntry.getPlayer() != PlayerNum.NOPLAYER && adjEntry.getPlayer() != player) {
+                enemyEntry = adjEntry;
+            }
+
+            // Skip if enemy piece already captured or there's no one in range
+            if(enemyEntry == null || lastCapture.checkIfEntryCaptured(enemyEntry)) continue;
+
+            // Check for free spaces after enemy piece
+            int nextX = enemyEntry.getX();
+            int nextY = enemyEntry.getY();
+
+            if(flyingKing) {
+                while(coordsValid((nextX += directionX), (nextY += directionY))) {
+                    GridEntry entryAfter = getEntryByCoords(nextX, nextY);
+                    if(entryAfter.getPlayer() == PlayerNum.NOPLAYER) {
+                        CaptureChain nextCapture = new CaptureChain(entryAfter, enemyEntry, lastCapture);
+                        lastCapture.addNextCapture(nextCapture);
+                        calculateKingCaptures(nextCapture, player);
+                    } else break;
+                }
+            }
+            else {  // Necessary duplicate code to avoid checks in previous while loop
+                if(coordsValid((nextX += directionX), (nextY += directionY))) {
+                    GridEntry entryAfter = getEntryByCoords(nextX, nextY);
+                    if(entryAfter.getPlayer() == PlayerNum.NOPLAYER) {
+                        CaptureChain nextCapture = new CaptureChain(entryAfter, enemyEntry, lastCapture);
+                        lastCapture.addNextCapture(nextCapture);
+                        calculateKingCaptures(nextCapture, player);
                     }
                 }
             }
