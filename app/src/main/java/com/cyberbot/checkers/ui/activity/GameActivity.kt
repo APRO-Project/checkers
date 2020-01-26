@@ -19,6 +19,7 @@ class GameActivity : AppCompatActivity() {
 
     companion object {
         val GRID_STATE_KEY = "grid"
+        val TURN_KEY = "grid"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,18 +27,16 @@ class GameActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game)
         move_player2.text = getString(R.string.game_player_turn_info)
 
-        val gridData =
-            if (savedInstanceState != null) {
-                with(savedInstanceState) {
-                    getSerializable(GRID_STATE_KEY) as Grid
-                }
-            } else {
-                val pref = Preferences.fromContext(this)
-                Grid.fromPreferences(pref)
+        if (savedInstanceState != null) {
+            savedInstanceState.run {
+                checkersGridView.gridData = getSerializable(GRID_STATE_KEY) as Grid
+                checkersGridView.playerTurn = getSerializable(TURN_KEY) as PlayerNum
             }
-
-        checkersGridView.gridData = gridData
-        checkersGridView.playerTurn = PlayerNum.SECOND
+        } else {
+            val pref = Preferences.fromContext(this)
+            checkersGridView.gridData = Grid.fromPreferences(pref)
+            checkersGridView.playerTurn = PlayerNum.SECOND
+        }
 
         val aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, 2)
 
@@ -62,13 +61,6 @@ class GameActivity : AppCompatActivity() {
 
                 grid.attemptMove(srcEntry, dstEntry)
                 if (dstEntry.player == PlayerNum.SECOND) {
-                    /*val src: GridEntry = grid.getMovableEntries(PlayerNum.FIRST).keys.random()
-
-                    val dst: GridEntry = grid.filter {
-                        it != src && gridData.destinationAllowed(src, it)
-                    }.random()
-                     */
-
                     checkersGridView.playerTurn = PlayerNum.NOPLAYER
                     move_player2.text = getString(R.string.game_ai_thinking)
                     Thread {
@@ -92,6 +84,7 @@ class GameActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             putSerializable(GRID_STATE_KEY, checkersGridView.gridData)
+            putSerializable(TURN_KEY, checkersGridView.playerTurn)
         }
 
         super.onSaveInstanceState(outState)
