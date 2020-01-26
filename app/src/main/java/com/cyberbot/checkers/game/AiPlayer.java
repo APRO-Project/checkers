@@ -56,7 +56,7 @@ public class AiPlayer {
                 node.setScore(minmax(node, lvl - 1, false));
             }
         } else {
-            gameTree.getRoot().setScore(alphabeta(gameTree.getRoot(), lvl, lvl - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true));
+            gameTree.getRoot().setScore(alphaBeta(gameTree.getRoot(), lvl, lvl - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true));
         }
         final Node bestChild = findBestChild(gameTree.getRoot());
         aiMoveSource = bestChild.getSrc();
@@ -93,7 +93,7 @@ public class AiPlayer {
         }
     }
 
-    private int alphabeta(Node node, int depth, int lvl2, int alpha, int beta, boolean maximizingPlayer) {
+    private int alphaBeta(Node node, int depth, int lvl2, int alpha, int beta, boolean maximizingPlayer) {
         if (depth == 0) {
             if (maximizingPlayer) {
                 return node.getValue(aiNum, adversaryNum);
@@ -104,7 +104,7 @@ public class AiPlayer {
             if (maximizingPlayer) {
                 int value = Integer.MIN_VALUE;
                 for (Node child : node.getChildren()) {
-                    value = Math.max(value, alphabeta(child, depth - 1, lvl2, alpha, beta, false));
+                    value = Math.max(value, alphaBeta(child, depth - 1, lvl2, alpha, beta, false));
                     alpha = Math.max(alpha, value);
                     if (alpha >= beta) {
                         break;
@@ -114,7 +114,7 @@ public class AiPlayer {
             } else {
                 int value = Integer.MAX_VALUE;
                 for (Node child : node.getChildren()) {
-                    value = Math.min(value, alphabeta(child, depth - 1, lvl2, alpha, beta, true));
+                    value = Math.min(value, alphaBeta(child, depth - 1, lvl2, alpha, beta, true));
                     beta = Math.min(beta, value);
                     if (alpha >= beta) {
                         break;
