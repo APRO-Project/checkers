@@ -54,9 +54,9 @@ public class AiPlayer {
         for (Node node : gameTree.getRoot().getChildren()) {
             node.setScore(minmax(node, lvl - 1, false));
         }
-        aiMoveSource = findBestChild(gameTree.getRoot()).getSrc();
-        aiMoveDestination = findBestChild(gameTree.getRoot()).getDst();
-
+        final Node bestChild = findBestChild(gameTree.getRoot());
+        aiMoveSource = bestChild.getSrc();
+        aiMoveDestination = bestChild.getDst();
     }
 
     private Node findBestChild(Node parent) {
