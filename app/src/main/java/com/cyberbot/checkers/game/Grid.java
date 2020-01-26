@@ -730,7 +730,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         for (GridEntry gridEntry : gridEntries) {
             if (gridEntry.getPlayer() == playerNum) {
 
-                value += 20;
+                value += 30;
 
                 if (gridEntry.getPieceType() == PieceType.KING) {
                     value += 80;
@@ -744,12 +744,12 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 if (playerNum == PlayerNum.FIRST) {
                     value += gridEntry.getY() + 1;
                 } else if (playerNum == PlayerNum.SECOND) {
-                    value += size - (gridEntry.getY() + 1);
+                    value += size - gridEntry.getY();
                 }
 
             } else if (gridEntry.getPlayer() == adversaryNum) {
 
-                value -= 20;
+                value -= 30;
 
                 if (gridEntry.getPieceType() == PieceType.KING) {
                     value -= 80;
@@ -763,7 +763,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 if (adversaryNum == PlayerNum.FIRST) {
                     value -= gridEntry.getY() + 1;
                 } else if (adversaryNum == PlayerNum.SECOND) {
-                    value -= size - (gridEntry.getY() + 1);
+                    value -= size - gridEntry.getY();
                 }
             }
         }
@@ -774,7 +774,27 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
-        grid.attemptMove(src, destination.getDestinationEntry(),true,false);
+        GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
+
+        srcEntry.setPlayer(PlayerNum.NOPLAYER);
+        srcEntry.setPieceType(PieceType.UNASSIGNED);
+
+        ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
+        if (capturedPieces != null) {
+            for (GridEntry destroyed : destination.getCapturedPieces()) {
+                GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
+
+                destroyedEntry.setPieceType(PieceType.UNASSIGNED);
+                destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
+            }
+        }
+
+        int dstX = destination.getDestinationEntry().getX();
+        int dstY = destination.getDestinationEntry().getY();
+
+        GridEntry dst = grid.getEntryByCoords(dstX, dstY);
+        dst.setPlayer(src.getPlayer());
+        dst.setPieceType(grid.promotionAvailable(src, dst) ? PieceType.KING : src.getPieceType());
 
         return grid;
     }
