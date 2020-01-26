@@ -152,7 +152,7 @@ abstract class PieceAnimator(protected val singleCellSize: Float, private var se
      * @param animator The animator to add to the list.
      */
     protected fun addAnimator(animator: Animator) {
-        addAnimator(animator)
+        animators.add(animator)
     }
 
     /**
