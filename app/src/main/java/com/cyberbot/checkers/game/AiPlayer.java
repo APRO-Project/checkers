@@ -43,15 +43,9 @@ public class AiPlayer {
 
     private int alphaBeta(Node node, int depth, int alpha, int beta, boolean maximizingPlayer) {
         if (depth == 0) {
-            if (maximizingPlayer) {
                 int value = node.getValue(aiNum, adversaryNum);
                 node.setScore(value);
                 return value;
-            } else {
-                int value = node.getValue(adversaryNum, aiNum);
-                node.setScore(value);
-                return value;
-            }
         } else {
 
             final HashMap<GridEntry, ArrayList<Destination>> possibleMoves;
