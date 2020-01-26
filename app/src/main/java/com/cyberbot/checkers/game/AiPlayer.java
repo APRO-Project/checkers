@@ -51,8 +51,12 @@ public class AiPlayer {
 
     public void executeMove(Grid grid) {
         buildTree(grid, lvl);
-        for (Node node : gameTree.getRoot().getChildren()) {
-            node.setScore(minmax(node, lvl - 1, false));
+        if (lvl < 2) {
+            for (Node node : gameTree.getRoot().getChildren()) {
+                node.setScore(minmax(node, lvl - 1, false));
+            }
+        } else {
+            gameTree.getRoot().setScore(alphabeta(gameTree.getRoot(), lvl, lvl - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true));
         }
         final Node bestChild = findBestChild(gameTree.getRoot());
         aiMoveSource = bestChild.getSrc();
@@ -74,15 +78,50 @@ public class AiPlayer {
             return node.getValue(aiNum, adversaryNum);
         } else {
             if (maximizingPlayer) {
-                int value = -999999;
+                int value = Integer.MIN_VALUE;
                 for (Node child : node.getChildren()) {
                     value = Math.max(value, minmax(child, depth - 1, false));
                 }
                 return value;
             } else {
-                int value = 999999;
+                int value = Integer.MAX_VALUE;
                 for (Node child : node.getChildren()) {
                     value = Math.min(value, minmax(child, depth - 1, true));
+                }
+                return value;
+            }
+        }
+    }
+
+    private int alphabeta(Node node, int depth, int lvl2, int alpha, int beta, boolean maximizingPlayer) {
+        if (depth == 0) {
+            if (maximizingPlayer) {
+                return node.getValue(aiNum, adversaryNum);
+            } else {
+                return node.getValue(adversaryNum, aiNum);
+            }
+        } else {
+            if (maximizingPlayer) {
+                int value = Integer.MIN_VALUE;
+                for (Node child : node.getChildren()) {
+                    value = Math.max(value, alphabeta(child, depth - 1, lvl2, alpha, beta, false));
+                    alpha = Math.max(alpha, value);
+                    if (alpha >= beta) {
+                        break;
+                    }
+                }
+                return value;
+            } else {
+                int value = Integer.MAX_VALUE;
+                for (Node child : node.getChildren()) {
+                    value = Math.min(value, alphabeta(child, depth - 1, lvl2, alpha, beta, true));
+                    beta = Math.min(beta, value);
+                    if (alpha >= beta) {
+                        break;
+                    }
+                }
+                if (depth == lvl2) {
+                    node.setScore(value);
                 }
                 return value;
             }
