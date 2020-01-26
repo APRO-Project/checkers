@@ -1,7 +1,5 @@
 package com.cyberbot.checkers.game;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Stores information about how game has ended.
  *
@@ -10,20 +8,22 @@ import org.jetbrains.annotations.NotNull;
  *
  * {@link GameEnd#reason} tells something more about what exactly happen that cause
  * the game to end.
+ *
+ * @see GameEndReason
  */
 public class GameEnd {
     private final PlayerNum winner;
-    private final String reason;
+    private final GameEndReason reason;
 
     public PlayerNum getWinner() {
         return winner;
     }
 
-    public String getReason() {
+    public GameEndReason getReason() {
         return reason;
     }
 
-    GameEnd(PlayerNum winner, @NotNull String reason) {
+    GameEnd(PlayerNum winner, GameEndReason reason) {
         this.winner = winner;
         this.reason = reason;
     }

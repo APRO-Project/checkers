@@ -660,7 +660,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     @Nullable
     public GameEnd isGameOver() {
         if(moveCount == 25) {
-            return new GameEnd(PlayerNum.NOPLAYER, "25 king-only moves without piece moves and captures");
+            return new GameEnd(PlayerNum.NOPLAYER, GameEndReason.DRAW_TOO_MANY_KING_ONLY_MOVES);
         }
 
         int firstPlayerPieces = 0;
@@ -681,30 +681,30 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         }
 
         if(secondPlayerKings + secondPlayerPieces == 0) {
-            return new GameEnd(PlayerNum.FIRST, "Opponent has no pieces remaining");
+            return new GameEnd(PlayerNum.FIRST, GameEndReason.WIN_OPPONENT_NO_PIECES_REMAINING);
         }
 
         if(firstPlayerKings + firstPlayerPieces == 0) {
-            return new GameEnd(PlayerNum.SECOND, "Opponent has no pieces remaining");
+            return new GameEnd(PlayerNum.SECOND, GameEndReason.WIN_OPPONENT_NO_PIECES_REMAINING);
         }
 
         if(firstPlayerKings == 1 && secondPlayerKings == 1 && firstPlayerPieces == 0 && secondPlayerPieces == 0) {
-            return new GameEnd(PlayerNum.NOPLAYER, "King vs King endgame");
+            return new GameEnd(PlayerNum.NOPLAYER, GameEndReason.DRAW_KING_VS_KING);
         }
 
         final int firstPlayerMovablePieces = getMovableEntries(PlayerNum.FIRST, false).size();
         final int secondPlayerMovablePieces = getMovableEntries(PlayerNum.SECOND, false).size();
 
         if(firstPlayerMovablePieces == 0 && secondPlayerMovablePieces == 0) {
-            return new GameEnd(PlayerNum.NOPLAYER, "No more moves to make");
+            return new GameEnd(PlayerNum.NOPLAYER, GameEndReason.DRAW_NO_MOVABLE_PIECES_REMAINING);
         }
 
         if(firstPlayerMovablePieces == 0) {
-            return new GameEnd(PlayerNum.FIRST, "Opponent has no movable pieces remaining");
+            return new GameEnd(PlayerNum.FIRST, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
         }
 
         if(secondPlayerMovablePieces == 0) {
-            return new GameEnd(PlayerNum.SECOND, "Opponent has no movable pieces remaining");
+            return new GameEnd(PlayerNum.SECOND, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
         }
 
         movableEntriesCache = null;
