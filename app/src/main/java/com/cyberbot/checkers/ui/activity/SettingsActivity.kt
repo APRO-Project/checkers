@@ -64,6 +64,15 @@ class SettingsActivity : AppCompatActivity() {
             }
         )
 
+        settingsDifficultyChipGroup.check(
+            when (prefs.aiDepth) {
+                1 -> R.id.chipEasy
+                2 -> R.id.chipMedium
+                3 -> R.id.chipHard
+                else -> R.id.chipMedium
+            }
+        )
+
         settingsGridSizeChipGroup.setOnCheckedChangeListener { _, id ->
             when (id) {
                 R.id.chip8 -> {
@@ -83,6 +92,16 @@ class SettingsActivity : AppCompatActivity() {
 
             prefs.save(this)
             settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
+        }
+
+        settingsDifficultyChipGroup.setOnCheckedChangeListener { _, id ->
+            when (id) {
+                R.id.chipEasy -> prefs.aiDepth = 1
+                R.id.chipMedium -> prefs.aiDepth = 2
+                R.id.chipHard -> prefs.aiDepth = 3
+            }
+
+            prefs.save(this)
         }
     }
 }
