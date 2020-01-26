@@ -774,7 +774,27 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
-        grid.attemptMove(src, destination.getDestinationEntry(),true,false);
+        GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
+
+        srcEntry.setPlayer(PlayerNum.NOPLAYER);
+        srcEntry.setPieceType(PieceType.UNASSIGNED);
+
+        ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
+        if (capturedPieces != null) {
+            for (GridEntry destroyed : destination.getCapturedPieces()) {
+                GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
+
+                destroyedEntry.setPieceType(PieceType.UNASSIGNED);
+                destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
+            }
+        }
+
+        int dstX = destination.getDestinationEntry().getX();
+        int dstY = destination.getDestinationEntry().getY();
+
+        GridEntry dst = grid.getEntryByCoords(dstX, dstY);
+        dst.setPlayer(src.getPlayer());
+        dst.setPieceType(grid.promotionAvailable(src, dst) ? PieceType.KING : src.getPieceType());
 
         return grid;
     }
