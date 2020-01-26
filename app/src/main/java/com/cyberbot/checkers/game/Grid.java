@@ -241,14 +241,17 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      *
      * @param src Source entry. Cannot be null
      * @param dst Destination entry. Cannot be null
-     * @return {@code true} is move was executed or {@code false} if it's not allowed
+     * @param deleteCapturedPieces Specify if captured pieces should be deleted from the board or not
+     * @param checkIfMoveAllowed Perform additional check if move from {@code src} to {@code dst} is allowed
+     * @return {@code true} is move was executed or {@code false} if it's not allowed or {@link Grid#movableEntriesCache}
+     * is null when invoked with {@code checkIfMoveAllowed} set to {@code false}
      *
      * @see Grid#promotionAvailable(GridEntry, GridEntry)
      */
-    public boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst) {
-        if(src == dst) return false;
+    private boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst, boolean deleteCapturedPieces, boolean checkIfMoveAllowed) {
+        if(checkIfMoveAllowed && (src == dst || !destinationAllowed(src, dst))) return false;
 
-        if (!destinationAllowed(src, dst)) return false;
+        if(movableEntriesCache == null) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
@@ -265,9 +268,35 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         gridEntries.get(srcIdx).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(srcIdx).setPieceType(PieceType.UNASSIGNED);
 
+        if(deleteCapturedPieces) {
+            Destination destination = getDestination(src, dst);
+            if(destination != null) {
+                ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
+                if(capturedPieces != null) {
+                    for(GridEntry captured: capturedPieces) {
+                        final int idx = gridEntries.indexOf(captured);
+                        gridEntries.get(idx).setPlayer(PlayerNum.NOPLAYER);
+                        gridEntries.get(idx).setPieceType(PieceType.UNASSIGNED);
+                    }
+                }
+            }
+        }
+
         movableEntriesCache = null;
 
         return true;
+    }
+
+    /**
+     * Overload method {@link Grid#attemptMove(GridEntry, GridEntry, boolean, boolean)} that doesn't
+     * delete captured pieces and performs additional checks if the move is allowed or not.
+     *
+     * @param src Source entry. Cannot be null
+     * @param dst Destination entry. Cannot be null
+     * @return {@code true} is move was executed or {@code false} if it's not allowed
+     */
+    public boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst) {
+        return attemptMove(src, dst, false, true);
     }
 
     @NotNull
