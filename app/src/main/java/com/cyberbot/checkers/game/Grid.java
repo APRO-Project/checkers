@@ -251,7 +251,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     private boolean attemptMove(@NotNull GridEntry src, @NotNull GridEntry dst, boolean deleteCapturedPieces, boolean checkIfMoveAllowed) {
         if(checkIfMoveAllowed && (src == dst || !destinationAllowed(src, dst))) return false;
 
-        if(movableEntriesCache == null) return false;
+        if(checkIfMoveAllowed && movableEntriesCache == null) return false;
 
         final int srcIdx = gridEntries.indexOf(src);
         final int dstIdx = gridEntries.indexOf(dst);
@@ -774,27 +774,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
     static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
-        GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());
-
-        srcEntry.setPlayer(PlayerNum.NOPLAYER);
-        srcEntry.setPieceType(PieceType.UNASSIGNED);
-
-        ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
-        if (capturedPieces != null) {
-            for (GridEntry destroyed : destination.getCapturedPieces()) {
-                GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
-
-                destroyedEntry.setPieceType(PieceType.UNASSIGNED);
-                destroyedEntry.setPlayer(PlayerNum.NOPLAYER);
-            }
-        }
-
-        int dstX = destination.getDestinationEntry().getX();
-        int dstY = destination.getDestinationEntry().getY();
-
-        GridEntry dst = grid.getEntryByCoords(dstX, dstY);
-        dst.setPlayer(src.getPlayer());
-        dst.setPieceType(src.getPieceType());
+        grid.attemptMove(src, destination.getDestinationEntry(),true,false);
 
         return grid;
     }
