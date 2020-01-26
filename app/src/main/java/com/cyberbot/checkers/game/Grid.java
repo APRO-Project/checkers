@@ -255,12 +255,12 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         }
 
         gridEntries.get(dstIdx).setPlayer(src.getPlayer());
-        gridEntries.get(dstIdx).setPieceType(src.getPieceType());
+        gridEntries.get(dstIdx).setPieceType(
+                promotionAvailable(src, dst) ? PieceType.KING : src.getPieceType()
+        );
 
         gridEntries.get(srcIdx).setPlayer(PlayerNum.NOPLAYER);
         gridEntries.get(srcIdx).setPieceType(PieceType.UNASSIGNED);
-
-        // TODO: Promote piece to king if necessary (an update javadoc)
 
         movableEntriesCache = null;
 
@@ -581,6 +581,26 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Tell if piece identified with {@code src} can be promoted to {@link PieceType#KING}.
+     *
+     * When given {@code src} belongs to {@link PlayerNum#NOPLAYER}, a {@link RuntimeException}
+     * is thrown.
+     *
+     * @param src Piece to be promoted
+     * @param dst Destination to where the piece is heading
+     * @return {@code true} if piece can be promoted, {@code false} otherwisea
+     */
+    public boolean promotionAvailable(@NotNull GridEntry src, @NotNull GridEntry dst) {
+        if(src.getPlayer() == PlayerNum.NOPLAYER){
+            throw new RuntimeException("Attempt to check for promotion for NOPLAYER entry");
+        }
+
+        if(src.getPieceType() == PieceType.KING) return false;
+
+        return src.getPlayer() == PlayerNum.FIRST ? dst.getY() == size-1 : dst.getY() == 0;
     }
 
     /**
