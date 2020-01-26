@@ -17,13 +17,25 @@ import kotlin.math.max
 
 class GameActivity : AppCompatActivity() {
 
+    companion object {
+        val GRID_STATE_KEY = "grid"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
         move_player2.text = getString(R.string.game_player_turn_info)
 
-        val pref = Preferences.fromContext(this)
-        val gridData = Grid.fromPreferences(pref)
+        val gridData =
+            if (savedInstanceState != null) {
+                with(savedInstanceState) {
+                    getSerializable(GRID_STATE_KEY) as Grid
+                }
+            } else {
+                val pref = Preferences.fromContext(this)
+                Grid.fromPreferences(pref)
+            }
+
         checkersGridView.gridData = gridData
         checkersGridView.playerTurn = PlayerNum.SECOND
 
@@ -75,5 +87,13 @@ class GameActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
+            putSerializable(GRID_STATE_KEY, checkersGridView.gridData)
+        }
+
+        super.onSaveInstanceState(outState)
     }
 }
