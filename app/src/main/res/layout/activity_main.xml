@@ -52,7 +52,6 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:text="@string/app_subtitle"
         app:layout_constraintEnd_toEndOf="@+id/titleTextView"
         app:layout_constraintStart_toStartOf="@+id/titleTextView"
