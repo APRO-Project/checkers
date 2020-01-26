@@ -591,38 +591,40 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         for (GridEntry gridEntry : gridEntries) {
             if (gridEntry.getPlayer() == playerNum) {
 
-            if (gridEntry.getPieceType() == PieceType.KING) {
-                value += 30;
-            }
-
-            // Prioritize sides
-            value += Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
-
-                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                    value += gridEntry.getY() / 2;
-                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                    value += Math.abs((gridEntry.getY() - getSize()) / 2);
-                }
-            } else if (gridEntry.getPlayer() == adversaryNum) {
-
-                //count pieces
-
-                value -= 10;
+                value += 20;
 
                 if (gridEntry.getPieceType() == PieceType.KING) {
-                    value -= 30;
+                    value += 80;
                 }
 
-                //prioritize sides
+                // Prioritize sides
+                value += Math.abs(gridEntry.getX() + 1 - (size / 2));
 
-                value -= Math.abs((gridEntry.getX()) + gridEntry.getY() - getSize()) / 4;
+                //Prioritize forward movement
 
-                //prioritize forward
+                if (playerNum == PlayerNum.FIRST) {
+                    value += gridEntry.getY() + 1;
+                } else if (playerNum == PlayerNum.SECOND) {
+                    value += size - (gridEntry.getY() + 1);
+                }
 
-                if (gridEntry.getPlayer() == PlayerNum.FIRST) {
-                    value -= gridEntry.getY() / 2;
-                } else if (gridEntry.getPlayer() == PlayerNum.SECOND) {
-                    value -= Math.abs((gridEntry.getY() - getSize()) / 2);
+            } else if (gridEntry.getPlayer() == adversaryNum) {
+
+                value -= 20;
+
+                if (gridEntry.getPieceType() == PieceType.KING) {
+                    value -= 80;
+                }
+
+                // Prioritize sides
+                value -= Math.abs(gridEntry.getX() + 1 - (size / 2));
+
+                //Prioritize forward movement
+
+                if (adversaryNum == PlayerNum.FIRST) {
+                    value -= gridEntry.getY() + 1;
+                } else if (adversaryNum == PlayerNum.SECOND) {
+                    value -= size - (gridEntry.getY() + 1);
                 }
             }
         }
@@ -639,7 +641,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         srcEntry.setPieceType(PieceType.UNASSIGNED);
 
         ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
-        if(capturedPieces != null) {
+        if (capturedPieces != null) {
             for (GridEntry destroyed : destination.getCapturedPieces()) {
                 GridEntry destroyedEntry = grid.getEntryByCoords(destroyed.getX(), destroyed.getY());
 
@@ -652,8 +654,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         int dstY = destination.getDestinationEntry().getY();
 
         GridEntry dst = grid.getEntryByCoords(dstX, dstY);
-        dst.setPlayer(PlayerNum.NOPLAYER);
-        dst.setPieceType(PieceType.UNASSIGNED);
+        dst.setPlayer(src.getPlayer());
+        dst.setPieceType(src.getPieceType());
 
         return grid;
     }
