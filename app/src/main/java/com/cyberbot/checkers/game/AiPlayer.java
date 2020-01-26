@@ -64,7 +64,7 @@ public class AiPlayer {
     }
 
     private Node findBestChild(Node parent) {
-        Node bestNode = new Node(null, null, -999999);
+        Node bestNode = new Node(null, null, Integer.MIN_VALUE);
         for (Node child : parent.getChildren()) {
             if (child.getScore() > bestNode.getScore()) {
                 bestNode = child;
