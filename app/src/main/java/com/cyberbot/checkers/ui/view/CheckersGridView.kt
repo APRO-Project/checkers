@@ -578,7 +578,7 @@ class CheckersGridView(
                 drawGridEntry(this, it)
 
                 currentPieceAnimator.let { animator ->
-                    if (animator == null || !animator.animatedPieces.containsKey(it)) {
+                    if (animator == null || !animator.containsEntry(it)) {
                         val cx = (it.x + 0.5F) * singleCellSize
                         val cy = (it.y + 0.5F) * singleCellSize
                         drawPlayer(this, it, cx, cy)
@@ -621,7 +621,7 @@ class CheckersGridView(
 
             currentPieceAnimator.let { animator ->
                 if (animator !== null) {
-                    animator.animatedPieces.forEach { (e, v) ->
+                    animator.forEach { (e, v) ->
                         if (e == movingEntry) {
                             drawPlayer(this, e, moveX, moveY, v.scale)
                         } else {

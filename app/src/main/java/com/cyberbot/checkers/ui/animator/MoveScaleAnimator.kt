@@ -7,6 +7,7 @@ import com.cyberbot.checkers.game.GridEntry
 class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
     PieceAnimator(singleCellSize, sequential) {
 
+
     fun addPiece(
         entry: GridEntry,
         srcX: Float,
@@ -16,10 +17,9 @@ class MoveScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
         dstY: Float,
         dstScale: Float
     ) {
-        addPieceInternal(entry, srcX, srcY, srcScale)
-        val values = animatedPieces[entry]
-            ?: throw RuntimeException("Piece not added to animatedPieces set")
-        animators.add(AnimatorSet().apply {
+        val values = addPieceInternal(entry, srcX, srcY, srcScale)
+
+        addAnimator(AnimatorSet().apply {
             playTogether(
                 ValueAnimator.ofFloat(srcScale, dstScale).apply {
                     addUpdateListener { animator ->

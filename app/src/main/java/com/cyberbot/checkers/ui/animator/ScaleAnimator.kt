@@ -1,10 +1,7 @@
 package com.cyberbot.checkers.ui.animator
 
-import android.animation.Animator
-import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import com.cyberbot.checkers.game.GridEntry
-import java.lang.RuntimeException
 
 class ScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
     PieceAnimator(singleCellSize, sequential) {
@@ -18,12 +15,10 @@ class ScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
         dstScale: Float
     ) {
         targetScale[entry] = dstScale
-        addPieceInternal(entry, srcScale)
 
-        val values = animatedPieces[entry]
-            ?: throw RuntimeException("Piece not added to animatedPieces set")
+        val values = addPieceInternal(entry, srcScale)
 
-        animators.add(ValueAnimator.ofFloat(srcScale, dstScale).apply {
+        addAnimator(ValueAnimator.ofFloat(srcScale, dstScale).apply {
             addUpdateListener { animator ->
                 values.scale = animator.animatedValue as Float
                 onUpdate(entry, values)
