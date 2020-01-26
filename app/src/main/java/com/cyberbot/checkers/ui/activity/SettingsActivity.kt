@@ -68,7 +68,7 @@ class SettingsActivity : AppCompatActivity() {
             when (prefs.aiDepth) {
                 1 -> R.id.chipEasy
                 2 -> R.id.chipMedium
-                3 -> R.id.chipHard
+                4 -> R.id.chipHard
                 else -> R.id.chipMedium
             }
         )
@@ -98,7 +98,7 @@ class SettingsActivity : AppCompatActivity() {
             when (id) {
                 R.id.chipEasy -> prefs.aiDepth = 1
                 R.id.chipMedium -> prefs.aiDepth = 2
-                R.id.chipHard -> prefs.aiDepth = 3
+                R.id.chipHard -> prefs.aiDepth = 4
             }
 
             prefs.save(this)
