@@ -29,18 +29,18 @@ class GameActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game)
         move_player2.text = getString(R.string.game_player_turn_info)
 
+        val pref = Preferences.fromContext(this)
         if (savedInstanceState != null) {
             savedInstanceState.run {
                 checkersGridView.gridData = getSerializable(GRID_STATE_KEY) as Grid
                 checkersGridView.playerTurn = getSerializable(TURN_KEY) as PlayerNum
             }
         } else {
-            val pref = Preferences.fromContext(this)
             checkersGridView.gridData = Grid.fromPreferences(pref)
             checkersGridView.playerTurn = PlayerNum.SECOND
         }
 
-        aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, 2)
+        aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, pref.aiDepth)
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
