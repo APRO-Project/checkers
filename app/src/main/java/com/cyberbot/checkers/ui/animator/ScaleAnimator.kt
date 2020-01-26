@@ -8,7 +8,6 @@ class ScaleAnimator(singleCellSize: Float, sequential: Boolean = false) :
 
     private var targetScale = HashMap<GridEntry, Float>()
 
-
     fun addPiece(
         entry: GridEntry,
         srcScale: Float,

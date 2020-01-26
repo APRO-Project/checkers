@@ -74,15 +74,18 @@ class GameActivity : AppCompatActivity() {
         move_player2.text = getString(R.string.game_ai_thinking)
         Thread {
             Sound.playSound(this@GameActivity, SoundType.AI_THINK)
+
             val startThinking = System.currentTimeMillis()
             aiPlayer.executeMove(checkersGridView.gridData)
             val endThinking = System.currentTimeMillis()
+
             Thread.sleep(max(0, 1000 - (endThinking - startThinking)))
             runOnUiThread {
                 val src = aiPlayer.aiMoveSource
                 val dst = aiPlayer.aiMoveDestination.destinationEntry
                 checkersGridView.attemptMove(src, dst)
             }
+
             checkersGridView.playerTurn = PlayerNum.SECOND
         }.start()
     }
