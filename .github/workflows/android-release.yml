@@ -109,6 +109,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.sign-apk.outputs.signedReleaseFile }}
-          asset_name: chekers-release-${{ steps.get_version.outputs.VERSION }}.apk
+          asset_name: checkers-release-${{ steps.get_version.outputs.VERSION }}.apk
           asset_content_type: application/vnd.android.package-archive
           
