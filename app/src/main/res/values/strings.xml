@@ -13,6 +13,7 @@
     <string name="preference_can_capture_backwards">can_capture_backwards</string>
     <string name="preference_flying_king">flying_king</string>
     <string name="preference_ai_depth">ai_depth</string>
+    <string name="preference_capture_hints">capture_hints</string>
 
     <string name="settings_board_preview">Preview</string>
     <string name="settings_grid_size">Grid size</string>
@@ -31,4 +32,5 @@
     <string name="settings_difficulty_hard">Hard</string>
     <string name="settings_difficulty">Difficulty</string>
     <string name="app_subtitle">by CyberBot Team</string>
+    <string name="settings_capture_hints">Capture hints</string>
 </resources>

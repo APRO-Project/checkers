@@ -24,6 +24,7 @@ class SettingsActivity : AppCompatActivity() {
         settingsCaptureBackwardSwitch.isChecked = prefs.canCaptureBackwards
         settingsMoveBackwardSwitch.isChecked = prefs.canMoveBackwards
         settingsFlyingKingSwitch.isChecked = prefs.flyingKing
+        settingsCaptureHintsSwitch.isChecked = prefs.captureHints
 
         settingsMoveBackwardSwitch.isEnabled = prefs.flyingKing
         settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
@@ -46,6 +47,11 @@ class SettingsActivity : AppCompatActivity() {
 
         settingsMoveBackwardSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.canMoveBackwards = isChecked
+            prefs.save(this)
+        }
+
+        settingsCaptureHintsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.captureHints = isChecked
             prefs.save(this)
         }
 

@@ -40,6 +40,7 @@ class GameActivity : AppCompatActivity() {
             checkersGridView.playerTurn = PlayerNum.SECOND
         }
 
+        checkersGridView.captureHints = pref.captureHints
         aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, pref.aiDepth)
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {

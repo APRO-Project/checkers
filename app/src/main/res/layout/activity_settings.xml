@@ -76,8 +76,9 @@
             android:text="@string/settings_mandatory_captures"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView2" />
+            app:layout_constraintTop_toBottomOf="@+id/settingsCaptureHintsSwitch" />
 
         <Switch
             android:id="@+id/settingsAutoCaptureSwitch"
@@ -220,6 +221,19 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+        <Switch
+            android:id="@+id/settingsCaptureHintsSwitch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/settings_row_margin_horizontal"
+            android:layout_marginTop="@dimen/settings_row_margin_vertical"
+            android:layout_marginEnd="@dimen/settings_row_margin_horizontal"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:text="@string/settings_capture_hints"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
