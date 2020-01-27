@@ -16,7 +16,6 @@ import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.*
 import com.cyberbot.checkers.ui.animator.*
-import org.apache.commons.lang3.SerializationUtils
 import java.lang.Float.max
 import java.lang.Float.min
 import kotlin.math.roundToInt
@@ -680,8 +679,7 @@ class CheckersGridView(
                     var pCx = (srcEntry.x + 0.5F) * singleCellSize
                     var pCy = (srcEntry.y + 0.5F) * singleCellSize
 
-                    destroyedPieces = SerializationUtils.clone(capturedPieces)
-                        ?: throw RuntimeException("Captured pieces are null for a capturing destination")
+                    destroyedPieces = capturedPieces
                     intermediateSteps?.forEach {
                         val cx2 = (it.x + 0.5F) * singleCellSize
                         val cy2 = (it.y + 0.5F) * singleCellSize
@@ -694,17 +692,17 @@ class CheckersGridView(
 
                     canvas.drawLine(pCx, pCy, cx, cy, paintCaptureHintLine)
                 } else {
-                    destroyedPieces.clear()
+                    destroyedPieces = null
                 }
             }
 
             if (destination == null) {
-                destroyedPieces.clear()
+                destroyedPieces = null
             }
         }
     }
 
-    private var destroyedPieces: ArrayList<GridEntry> = ArrayList()
+    private var destroyedPieces: ArrayList<GridEntry>? = null
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -717,7 +715,7 @@ class CheckersGridView(
                 if (srcEntry != null) {
                     drawWhenMoving(this, srcEntry)
                 } else {
-                    destroyedPieces.clear()
+                    destroyedPieces = null
                 }
             }
 
@@ -732,7 +730,7 @@ class CheckersGridView(
                             it,
                             cx,
                             cy,
-                            toBeDestroyed = captureHints && destroyedPieces.contains(it)
+                            toBeDestroyed = captureHints && destroyedPieces?.contains(it) ?: false
                         )
                     }
                 }
