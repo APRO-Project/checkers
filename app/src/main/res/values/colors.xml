@@ -22,5 +22,6 @@
     <color name="game_color_player_outline1">#000000</color>
     <color name="game_color_player2">#000000</color>
     <color name="game_color_player_outline2">#FFFFFF</color>
-    <color name="game_color_move_hint_line">#80C21E76</color>
+    <color name="game_color_capture_hint_line">#E23093</color>
+    <color name="game_color_capture_destroyed_hint_line">#C21E4C</color>
 </resources>

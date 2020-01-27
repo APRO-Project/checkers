@@ -12,7 +12,8 @@
         <attr name="player_color2" format="color" />
         <attr name="player_outline_color1" format="color" />
         <attr name="player_outline_color2" format="color" />
-        <attr name="move_hint_color" format="color" />
+        <attr name="capture_hint_color" format="color" />
+        <attr name="capture_hint_destroyed_color" format="color" />
         <attr name="view_size" format="enum" >
             <enum name="auto" value="0"/>
             <enum name="width" value="1"/>
