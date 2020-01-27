@@ -11,7 +11,8 @@ class Preferences private constructor(
     var canMoveBackwards: Boolean,
     var canCaptureBackwards: Boolean,
     var flyingKing: Boolean,
-    var aiDepth: Int
+    var aiDepth: Int,
+    var captureHints: Boolean
 ) {
     companion object {
         fun fromContext(context: Context): Preferences {
@@ -42,9 +43,9 @@ class Preferences private constructor(
 
                 val flyingKing =
                     sharedPref.getBoolean(getString(R.string.preference_flying_king), true)
-
-                val aiDepth =
-                    sharedPref.getInt(getString(R.string.preference_ai_depth), 2)
+                val aiDepth = sharedPref.getInt(getString(R.string.preference_ai_depth), 2)
+                val captureHints =
+                    sharedPref.getBoolean(getString(R.string.preference_capture_hints), true)
 
 
                 return Preferences(
@@ -55,7 +56,8 @@ class Preferences private constructor(
                     canMoveBackwards,
                     canCaptureBackwards,
                     flyingKing,
-                    aiDepth
+                    aiDepth,
+                    captureHints
                 )
             }
         }
@@ -80,6 +82,7 @@ class Preferences private constructor(
                 )
                 it.putBoolean(getString(R.string.preference_flying_king), flyingKing)
                 it.putInt(getString(R.string.preference_ai_depth), aiDepth)
+                it.putBoolean(getString(R.string.preference_capture_hints), captureHints)
                 it.apply()
             }
         }
