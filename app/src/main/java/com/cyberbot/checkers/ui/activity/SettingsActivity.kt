@@ -1,6 +1,7 @@
 package com.cyberbot.checkers.ui.activity
 
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.game.Grid
@@ -104,10 +105,27 @@ class SettingsActivity : AppCompatActivity() {
             when (id) {
                 R.id.chipEasy -> prefs.aiDepth = 1
                 R.id.chipMedium -> prefs.aiDepth = 2
-                R.id.chipHard -> prefs.aiDepth = 4
+                R.id.chipHard -> {
+                    showPoorPerformanceDialog()
+                    prefs.aiDepth = 4
+                }
             }
 
             prefs.save(this)
         }
+    }
+
+    private fun showPoorPerformanceDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.apply {
+            setTitle(getString(R.string.settings_performance_dialog_title))
+            setMessage(getString(R.string.settings_performance_dialog_message))
+
+            setPositiveButton(getString(R.string.settings_performance_dialog_positive)) { dialog, _ ->
+                dialog.dismiss()
+            }
+        }
+
+        builder.create().show()
     }
 }

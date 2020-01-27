@@ -37,4 +37,7 @@
     <string name="game_quit_dialog_title">Quit</string>
     <string name="game_quit_dialog_positive">Yes</string>
     <string name="game_quit_dialog_negative">No</string>
+    <string name="settings_performance_dialog_positive">OK</string>
+    <string name="settings_performance_dialog_title">Performance issues</string>
+    <string name="settings_performance_dialog_message">This difficulty might be slow on lower-end devices and boards bigger then 8x8.</string>
 </resources>

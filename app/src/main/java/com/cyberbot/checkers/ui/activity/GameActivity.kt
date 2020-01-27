@@ -94,8 +94,8 @@ class GameActivity : AppCompatActivity() {
     override fun onBackPressed() {
         val builder = AlertDialog.Builder(this)
         builder.apply {
-            setMessage(getString(R.string.game_quit_dialog_message))
             setTitle(getString(R.string.game_quit_dialog_title))
+            setMessage(getString(R.string.game_quit_dialog_message))
 
             setPositiveButton(getString(R.string.game_quit_dialog_positive)) { _, _ -> super.onBackPressed() }
             setNegativeButton(getString(R.string.game_quit_dialog_negative)) { dialog, _ -> dialog.dismiss() }
