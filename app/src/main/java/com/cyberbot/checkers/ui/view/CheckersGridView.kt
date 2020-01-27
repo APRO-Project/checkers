@@ -466,6 +466,8 @@ class CheckersGridView(
             throw RuntimeException("Should not be null, since already checked with destinationAllowed")
         }
 
+        userInteractionEnabled = false
+
         if (destination.isCapture) {
             currentPieceAnimator = CaptureExplosionAnimator(singleCellSize).apply {
                 destination.capturedPieces?.forEach { addTargetPiece(it) }
@@ -496,6 +498,7 @@ class CheckersGridView(
                     doOnEnd {
                         currentPieceAnimator = null
                         currentAnimator = null
+                        userInteractionEnabled = true
 
                         moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
 
@@ -523,6 +526,7 @@ class CheckersGridView(
                     doOnEnd {
                         currentPieceAnimator = null
                         currentAnimator = null
+                        userInteractionEnabled = true
 
                         moveAttemptListener?.onForcedMoveEnd(gridData, srcEntry, dstEntry)
                     }
