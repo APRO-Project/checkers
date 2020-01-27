@@ -16,6 +16,7 @@ import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
 import com.cyberbot.checkers.game.*
 import com.cyberbot.checkers.ui.animator.*
+import org.apache.commons.lang3.SerializationUtils
 import java.lang.Float.max
 import java.lang.Float.min
 import kotlin.math.roundToInt
@@ -679,7 +680,7 @@ class CheckersGridView(
                     var pCx = (srcEntry.x + 0.5F) * singleCellSize
                     var pCy = (srcEntry.y + 0.5F) * singleCellSize
 
-                    destroyedPieces = capturedPieces
+                    destroyedPieces = SerializationUtils.clone(capturedPieces)
                         ?: throw RuntimeException("Captured pieces are null for a capturing destination")
                     intermediateSteps?.forEach {
                         val cx2 = (it.x + 0.5F) * singleCellSize
@@ -695,6 +696,10 @@ class CheckersGridView(
                 } else {
                     destroyedPieces.clear()
                 }
+            }
+
+            if (destination == null) {
+                destroyedPieces.clear()
             }
         }
     }
