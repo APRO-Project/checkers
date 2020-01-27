@@ -33,4 +33,11 @@
     <string name="settings_difficulty">Difficulty</string>
     <string name="app_subtitle">by CyberBot Team</string>
     <string name="settings_capture_hints">Capture hints</string>
+    <string name="game_quit_dialog_message">Are you sure you want to end the game? Your progress will not be saved</string>
+    <string name="game_quit_dialog_title">Quit</string>
+    <string name="game_quit_dialog_positive">Yes</string>
+    <string name="game_quit_dialog_negative">No</string>
+    <string name="settings_performance_dialog_positive">OK</string>
+    <string name="settings_performance_dialog_title">Performance issues</string>
+    <string name="settings_performance_dialog_message">This difficulty might be slow on lower-end devices and boards bigger then 8x8.</string>
 </resources>

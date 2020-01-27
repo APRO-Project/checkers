@@ -1,6 +1,7 @@
 package com.cyberbot.checkers.ui.activity
 
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
@@ -88,6 +89,19 @@ class GameActivity : AppCompatActivity() {
                 checkersGridView.animateMove(src, dst)
             }
         }.start()
+    }
+
+    override fun onBackPressed() {
+        val builder = AlertDialog.Builder(this)
+        builder.apply {
+            setTitle(getString(R.string.game_quit_dialog_title))
+            setMessage(getString(R.string.game_quit_dialog_message))
+
+            setPositiveButton(getString(R.string.game_quit_dialog_positive)) { _, _ -> super.onBackPressed() }
+            setNegativeButton(getString(R.string.game_quit_dialog_negative)) { dialog, _ -> dialog.dismiss() }
+        }
+
+        builder.create().show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -265,7 +265,7 @@ class CheckersGridView(
     var hintLineDestroyedWidth: Float = 0.075F
     var hintLineRadius: Float = 0.6F
     var captureHints = true
-    var greyedOutOpacity = 0.75F
+    var greyedOutOpacity = 0.6F
 
     /**
      * Main data source for displaying and interacting with.
