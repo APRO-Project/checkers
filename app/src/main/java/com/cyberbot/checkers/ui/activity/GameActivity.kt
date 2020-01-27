@@ -50,6 +50,7 @@ class GameActivity : AppCompatActivity() {
 
             override fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
                 grid.attemptMove(srcEntry, dstEntry)
+                checkersGridView.playerTurn = PlayerNum.SECOND
                 move_player2.text = getString(R.string.game_player_turn_info)
             }
 
@@ -84,10 +85,8 @@ class GameActivity : AppCompatActivity() {
             runOnUiThread {
                 val src = aiPlayer.aiMoveSource
                 val dst = aiPlayer.aiMoveDestination.destinationEntry
-                checkersGridView.attemptMove(src, dst)
+                checkersGridView.animateMove(src, dst)
             }
-
-            checkersGridView.playerTurn = PlayerNum.SECOND
         }.start()
     }
 

@@ -265,6 +265,7 @@ class CheckersGridView(
     var hintLineDestroyedWidth: Float = 0.075F
     var hintLineRadius: Float = 0.6F
     var captureHints = true
+    var greyedOutOpacity = 0.75F
 
     /**
      * Main data source for displaying and interacting with.
@@ -366,6 +367,12 @@ class CheckersGridView(
         }
     }
 
+    private fun getGreyedOutPaint(paint: Paint): Paint {
+        return Paint(paint).apply {
+            alpha = (greyedOutOpacity * 255).roundToInt()
+        }
+    }
+
     private fun drawGridEntry(
         canvas: Canvas, entry: GridEntry,
         paint: Paint = if (entry.legal()) paintGridColorLegal else paintGridColorIllegal
@@ -388,20 +395,31 @@ class CheckersGridView(
         cx: Float,
         cy: Float,
         scale: Float = 1F,
-        toBeDestroyed: Boolean = false
+        toBeDestroyed: Boolean = false,
+        greyedOut: Boolean = false
     ) {
         canvas.apply {
+            var playerPaint: Paint
+            var outlinePaint: Paint
             when (entry.player) {
                 PlayerNum.FIRST -> {
-                    drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor1)
-                    drawCircle(cx, cy, playerRadius * scale, paintPlayerColor1)
+                    playerPaint = paintPlayerColor1
+                    outlinePaint = paintPlayerOutlineColor1
                 }
                 PlayerNum.SECOND -> {
-                    drawCircle(cx, cy, playerRadiusOutline * scale, paintPlayerOutlineColor2)
-                    drawCircle(cx, cy, playerRadius * scale, paintPlayerColor2)
+                    playerPaint = paintPlayerColor2
+                    outlinePaint = paintPlayerOutlineColor2
                 }
                 else -> return
             }
+
+            if (greyedOut) {
+                playerPaint = getGreyedOutPaint(playerPaint)
+                outlinePaint = getGreyedOutPaint(outlinePaint)
+            }
+
+            drawCircle(cx, cy, playerRadiusOutline * scale, outlinePaint)
+            drawCircle(cx, cy, playerRadius * scale, playerPaint)
 
             if (entry.pieceType == PieceType.KING) {
                 val d = resources.getDrawable(R.drawable.ic_king, null)
@@ -456,7 +474,7 @@ class CheckersGridView(
      *
      * @see [Grid.destinationAllowed]
      */
-    fun attemptMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
+    fun animateMove(srcEntry: GridEntry, dstEntry: GridEntry): Boolean {
         if (!gridData.destinationAllowed(srcEntry, dstEntry)) {
             return false
         }
@@ -646,67 +664,75 @@ class CheckersGridView(
     }
 
     private fun drawWhenMoving(canvas: Canvas, srcEntry: GridEntry) {
-        val x = (moveX / singleCellSize).toInt()
-        val y = (moveY / singleCellSize).toInt()
-        val dstEntry = gridData.getEntryByCoords(x, y)
+        val targetY = (moveX / singleCellSize).toInt()
+        val targetX = (moveY / singleCellSize).toInt()
+        val dstEntry = gridData.getEntryByCoords(targetY, targetX)
 
-        if (userInteracting) {
-            val allowedEntries = gridData.getMovableEntries(playerTurn)
-            var destination: Destination? = null
-            allowedEntries[movingEntry]?.forEach {
-                if (it.destinationEntry == dstEntry) {
-                    destination = it
-                }
-
-                drawGridEntry(
-                    canvas, it.destinationEntry,
-                    if (it.isCapture) paintGridColorCaptureAllowedHint
-                    else paintGridColorMoveAllowedHint
-                )
+        val allowedEntries = gridData.getMovableEntries(playerTurn)
+        var destination: Destination? = null
+        allowedEntries[movingEntry]?.forEach {
+            if (it.destinationEntry == dstEntry) {
+                destination = it
             }
 
-            if (dstEntry != movingEntry) {
-                drawGridEntry(
-                    canvas, dstEntry,
-                    if (gridData.destinationAllowed(srcEntry, dstEntry))
-                        paintGridColorMoveAllowed else paintGridColorMoveForbidden
-                )
-            }
+            drawGridEntry(
+                canvas, it.destinationEntry,
+                if (it.isCapture) paintGridColorCaptureAllowedHint
+                else paintGridColorMoveAllowedHint
+            )
+        }
 
-            drawGridEntry(canvas, srcEntry, paintGridColorMoveSource)
+        if (dstEntry != movingEntry) {
+            drawGridEntry(
+                canvas, dstEntry,
+                if (gridData.destinationAllowed(srcEntry, dstEntry))
+                    paintGridColorMoveAllowed else paintGridColorMoveForbidden
+            )
+        }
 
-            val cx = (dstEntry.x + 0.5F) * singleCellSize
-            val cy = (dstEntry.y + 0.5F) * singleCellSize
+        drawGridEntry(canvas, srcEntry, paintGridColorMoveSource)
 
-            destination?.apply {
-                if (captureHints && isCapture) {
-                    var pCx = (srcEntry.x + 0.5F) * singleCellSize
-                    var pCy = (srcEntry.y + 0.5F) * singleCellSize
+        val dstX = (dstEntry.x + 0.5F) * singleCellSize
+        val dstY = (dstEntry.y + 0.5F) * singleCellSize
 
-                    destroyedPieces = capturedPieces
-                    intermediateSteps?.forEach {
-                        val cx2 = (it.x + 0.5F) * singleCellSize
-                        val cy2 = (it.y + 0.5F) * singleCellSize
+        // Draw capture hint lines
+        destination?.apply {
+            if (captureHints && isCapture) {
+                var pCx = (srcEntry.x + 0.5F) * singleCellSize
+                var pCy = (srcEntry.y + 0.5F) * singleCellSize
 
-                        canvas.drawLine(pCx, pCy, cx2, cy2, paintCaptureHintLine)
-
-                        pCx = cx2
-                        pCy = cy2
-                    }
+                intermediateSteps?.forEach {
+                    val cx = (it.x + 0.5F) * singleCellSize
+                    val cy = (it.y + 0.5F) * singleCellSize
 
                     canvas.drawLine(pCx, pCy, cx, cy, paintCaptureHintLine)
-                } else {
-                    destroyedPieces = null
-                }
-            }
 
-            if (destination == null) {
-                destroyedPieces = null
+                    pCx = cx
+                    pCy = cy
+                }
+
+                canvas.drawLine(pCx, pCy, dstX, dstY, paintCaptureHintLine)
+            }
+        }
+
+        val movingEntryValues = currentPieceAnimator?.getValuesForEntry(srcEntry)
+
+        gridData.forEach {
+            val cx = (it.x + 0.5F) * singleCellSize
+            val cy = (it.y + 0.5F) * singleCellSize
+
+            if (it != movingEntry) {
+                drawPlayer(
+                    canvas, it, cx, cy,
+                    toBeDestroyed = captureHints && destination?.capturedPieces?.contains(it) ?: false,
+                    greyedOut = it.player == playerTurn && !allowedEntries.containsKey(it)
+                )
+            } else if (movingEntryValues == null) {
+                drawPlayer(canvas, it, moveX, moveY, playerScaleMoving)
             }
         }
     }
 
-    private var destroyedPieces: ArrayList<GridEntry>? = null
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -715,45 +741,44 @@ class CheckersGridView(
                 drawGridEntry(this, it)
             }
 
-            movingEntry.let { srcEntry ->
-                if (srcEntry != null) {
-                    drawWhenMoving(this, srcEntry)
-                } else {
-                    destroyedPieces = null
-                }
+            movingEntry?.let { srcEntry ->
+                drawWhenMoving(this, srcEntry)
             }
 
-            gridData.forEach {
-                currentPieceAnimator.let { animator ->
-                    // Draw all pieces that are not being animated
-                    if (animator == null || !animator.containsEntry(it)) {
-                        val cx = (it.x + 0.5F) * singleCellSize
-                        val cy = (it.y + 0.5F) * singleCellSize
-                        drawPlayer(
-                            this,
-                            it,
-                            cx,
-                            cy,
-                            toBeDestroyed = captureHints && destroyedPieces?.contains(it) ?: false
-                        )
+            val allowedEntries =
+                if (playerTurn != PlayerNum.NOPLAYER) {
+                    gridData.getMovableEntries(playerTurn)
+                } else {
+                    null
+                }
+
+            // Draw all pieces that are not being animated
+            // But only if the user is not moving an entry
+            // In that case these are drawn by `drawWhenMoving`
+            if (movingEntry == null) {
+                gridData.forEach {
+                    currentPieceAnimator.let { animator ->
+                        if (animator == null || !animator.containsEntry(it)) {
+                            val cx = (it.x + 0.5F) * singleCellSize
+                            val cy = (it.y + 0.5F) * singleCellSize
+                            drawPlayer(
+                                this, it, cx, cy,
+                                greyedOut = it.player == playerTurn &&
+                                        !(allowedEntries?.containsKey(it) ?: false)
+                            )
+                        }
                     }
                 }
             }
 
             // Draw all pieces that are being animated
-            currentPieceAnimator.let { animator ->
-                if (animator !== null) {
-                    animator.forEach { (e, v) ->
-                        // If moving entry is present draw it where the user moves it despite the animations
-                        if (e == movingEntry) {
-                            drawPlayer(this, e, moveX, moveY, v.scale)
-                        } else {
-                            drawPlayer(this, e, v.x, v.y, v.scale)
-                        }
-                    }
-                } else {
-                    movingEntry?.let {
-                        drawPlayer(this, it, moveX, moveY, playerScaleMoving)
+            currentPieceAnimator?.let { animator ->
+                animator.forEach { (e, v) ->
+                    // If moving entry is present draw it where the user moves it despite the animations
+                    if (e == movingEntry) {
+                        drawPlayer(this, e, moveX, moveY, v.scale)
+                    } else {
+                        drawPlayer(this, e, v.x, v.y, v.scale)
                     }
                 }
             }
@@ -781,7 +806,9 @@ class CheckersGridView(
                 val y = (event.y / singleCellSize).toInt()
 
                 val entry = gridData.getEntryByCoords(x, y)
-                if (!playerMoveAllowed(entry.player)) {
+                if (!playerMoveAllowed(entry.player) ||
+                    !gridData.getMovableEntries(playerTurn).containsKey(entry)
+                ) {
                     return true
                 }
 
