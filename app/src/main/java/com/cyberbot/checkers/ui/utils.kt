@@ -17,7 +17,7 @@ fun getStringResFromReason(gameEndReason: GameEndReason, positive: Boolean): Int
             GameEndReason.DRAW_NO_MOVABLE_PIECES_REMAINING -> R.string.game_end_draw_no_movable_remaining
             GameEndReason.DRAW_KING_VS_KING -> R.string.game_end_draw_king_vs_king
             GameEndReason.WIN_OPPONENT_NO_PIECES_REMAINING -> R.string.game_end_positive_no_pieces_remaining
-            GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING -> R.string.game_end_negative_no_movable_remaining
+            GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING -> R.string.game_end_positive_no_movable_remaining
         }
     } else {
         when (gameEndReason) {
