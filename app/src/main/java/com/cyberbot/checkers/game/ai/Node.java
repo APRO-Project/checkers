@@ -8,6 +8,9 @@ import com.cyberbot.checkers.game.logic.PlayerNum;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class used to build game tree for needs of {@link AiPlayer}
+ */
 class Node {
     private GridEntry src;
     private Destination dst;
