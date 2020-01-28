@@ -23,7 +23,6 @@ import java.util.Map;
  */
 public class Grid implements Iterable<GridEntry>, Serializable {
     private final int size;
-    private final int playerRows;
     private final ArrayList<GridEntry> gridEntries;
     private transient HashMap<GridEntry, ArrayList<Destination>> movableEntriesCache;
 
@@ -37,10 +36,6 @@ public class Grid implements Iterable<GridEntry>, Serializable {
 
     public int getSize() {
         return size;
-    }
-
-    public int getPlayerRows() {
-        return playerRows;
     }
 
     /**
@@ -67,7 +62,6 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         }
 
         this.size = size;
-        this.playerRows = playerRows;
         gridEntries = new ArrayList<>();
         movableEntriesCache = null;
 
@@ -264,9 +258,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
                 ArrayList<GridEntry> capturedPieces = destination.getCapturedPieces();
                 if(capturedPieces != null) {
                     for(GridEntry captured: capturedPieces) {
-                        final int idx = gridEntries.indexOf(captured);
-                        gridEntries.get(idx).setPlayer(PlayerNum.NOPLAYER);
-                        gridEntries.get(idx).setPieceType(PieceType.UNASSIGNED);
+                        removeGridEntry(captured);
                     }
                 }
             }
@@ -639,7 +631,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
      * @param dst Destination to where the piece is heading
      * @return {@code true} if piece can be promoted, {@code false} otherwisea
      */
-    public boolean promotionAvailable(@NotNull GridEntry src, @NotNull GridEntry dst) {
+    private boolean promotionAvailable(@NotNull GridEntry src, @NotNull GridEntry dst) {
         if(src.getPlayer() == PlayerNum.NOPLAYER){
             throw new RuntimeException("Attempt to check for promotion for NOPLAYER entry");
         }
@@ -700,11 +692,11 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         }
 
         if(firstPlayerMovablePieces == 0) {
-            return new GameEnd(PlayerNum.FIRST, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
+            return new GameEnd(PlayerNum.SECOND, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
         }
 
         if(secondPlayerMovablePieces == 0) {
-            return new GameEnd(PlayerNum.SECOND, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
+            return new GameEnd(PlayerNum.FIRST, GameEndReason.WIN_OPPONENT_NO_MOVABLE_PIECES_REMAINING);
         }
 
         movableEntriesCache = null;
@@ -888,31 +880,5 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         dst.setPieceType(grid.promotionAvailable(src, dst) ? PieceType.KING : src.getPieceType());
 
         return grid;
-    }
-
-    boolean won(PlayerNum enemy) {
-        if (getMovableEntries(enemy).isEmpty()) {
-            return true;
-        }
-        int enemyNo = 0;
-        for (GridEntry gridEntry : gridEntries) {
-            if (gridEntry.getPlayer() == enemy) {
-                enemyNo++;
-            }
-        }
-        return enemyNo == 0;
-    }
-
-    boolean lost(PlayerNum player) {
-        if (getMovableEntries(player).isEmpty()) {
-            return true;
-        }
-        int playerNo = 0;
-        for (GridEntry gridEntry : gridEntries) {
-            if (gridEntry.getPlayer() == player) {
-                playerNo++;
-            }
-        }
-        return playerNo == 0;
     }
 }
