@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
-import com.cyberbot.checkers.game.Grid
-import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.game.logic.Grid
+import com.cyberbot.checkers.game.logic.PlayerNum
 import com.cyberbot.checkers.preferences.Preferences
 import kotlinx.android.synthetic.main.activity_settings.*
 
@@ -18,7 +18,10 @@ class SettingsActivity : AppCompatActivity() {
 
         val prefs = Preferences.fromContext(this)
         settingsGridPreview.playerTurn = PlayerNum.NOPLAYER
-        settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
+        settingsGridPreview.gridData = Grid(
+            prefs.gridSize,
+            prefs.playerRows
+        )
 
         settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
         settingsAutoCaptureSwitch.isChecked = prefs.autoCapture
@@ -98,7 +101,10 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             prefs.save(this)
-            settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
+            settingsGridPreview.gridData = Grid(
+                prefs.gridSize,
+                prefs.playerRows
+            )
         }
 
         settingsDifficultyChipGroup.setOnCheckedChangeListener { _, id ->

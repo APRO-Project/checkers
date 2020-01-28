@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

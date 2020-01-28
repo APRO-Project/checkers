@@ -8,7 +8,11 @@ import androidx.transition.TransitionManager
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.*
+import com.cyberbot.checkers.game.ai.AiPlayer
+import com.cyberbot.checkers.game.logic.GameEnd
+import com.cyberbot.checkers.game.logic.Grid
+import com.cyberbot.checkers.game.logic.GridEntry
+import com.cyberbot.checkers.game.logic.PlayerNum
 import com.cyberbot.checkers.preferences.Preferences
 import com.cyberbot.checkers.ui.getEndGameString
 import com.cyberbot.checkers.ui.view.MoveAttemptListener
@@ -43,7 +47,11 @@ class GameActivity : AppCompatActivity() {
         }
 
         checkersGridView.captureHints = pref.captureHints
-        aiPlayer = AiPlayer(PlayerNum.FIRST, PlayerNum.SECOND, pref.aiDepth)
+        aiPlayer = AiPlayer(
+            PlayerNum.FIRST,
+            PlayerNum.SECOND,
+            pref.aiDepth
+        )
 
         checkersGridView.moveAttemptListener = object : MoveAttemptListener {
             override fun onForcedMoveStart(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {

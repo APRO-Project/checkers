@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

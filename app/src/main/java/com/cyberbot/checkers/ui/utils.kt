@@ -3,7 +3,7 @@ package com.cyberbot.checkers.ui
 import android.content.Context
 import androidx.annotation.StringRes
 import com.cyberbot.checkers.R
-import com.cyberbot.checkers.game.GameEndReason
+import com.cyberbot.checkers.game.logic.GameEndReason
 
 fun Context.getEndGameString(gameEndReason: GameEndReason, positive: Boolean): String {
     return getString(getStringResFromReason(gameEndReason, positive))

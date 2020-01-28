@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -807,7 +807,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return getMovableEntries(player, true);
     }
 
-    int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
+    public int getValue(PlayerNum playerNum, PlayerNum adversaryNum) {
 
         int value = 0;
         for (GridEntry gridEntry : gridEntries) {
@@ -854,7 +854,7 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         return value;
     }
 
-    static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
+    public static Grid simulateMove(Grid startGrid, GridEntry src, Destination destination) {
         Grid grid = SerializationUtils.clone(startGrid);
 
         GridEntry srcEntry = grid.getEntryByCoords(src.getX(), src.getY());

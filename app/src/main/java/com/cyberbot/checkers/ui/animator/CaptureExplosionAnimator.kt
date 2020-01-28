@@ -5,7 +5,7 @@ import android.animation.ValueAnimator
 import android.view.animation.PathInterpolator
 import androidx.core.animation.doOnStart
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.GridEntry
+import com.cyberbot.checkers.game.logic.GridEntry
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
