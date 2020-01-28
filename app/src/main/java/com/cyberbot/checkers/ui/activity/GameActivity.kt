@@ -1,16 +1,16 @@
 package com.cyberbot.checkers.ui.activity
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.transition.TransitionManager
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.AiPlayer
-import com.cyberbot.checkers.game.Grid
-import com.cyberbot.checkers.game.GridEntry
-import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.game.*
 import com.cyberbot.checkers.preferences.Preferences
+import com.cyberbot.checkers.ui.getEndGameString
 import com.cyberbot.checkers.ui.view.MoveAttemptListener
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlin.math.max
@@ -24,6 +24,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private lateinit var aiPlayer: AiPlayer
+    private var gameEnded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +52,17 @@ class GameActivity : AppCompatActivity() {
 
             override fun onForcedMoveEnd(grid: Grid, srcEntry: GridEntry, dstEntry: GridEntry) {
                 grid.attemptMove(srcEntry, dstEntry)
-                checkersGridView.playerTurn = PlayerNum.SECOND
+                val gameOver = grid.isGameOver
+                if (gameOver != null) {
+                    move_player2.text = ""
+                    handleEndGame(gameOver)
+                    return
+                }
+
                 move_player2.text = getString(R.string.game_player_turn_info)
+
+                checkersGridView.playerTurn = PlayerNum.SECOND
+
             }
 
             override fun onUserMoveStart(grid: Grid, srcEntry: GridEntry) {
@@ -65,11 +75,43 @@ class GameActivity : AppCompatActivity() {
                 }
 
                 grid.attemptMove(srcEntry, dstEntry)
+
+                val gameOver = grid.isGameOver
+                if (gameOver != null) {
+                    handleEndGame(gameOver)
+                    return
+                }
+
                 if (dstEntry.player == PlayerNum.SECOND) {
                     executeAiMove()
                 }
             }
         }
+    }
+
+    private fun handleEndGame(end: GameEnd, delay: Long = 1500) {
+        gameEnded = true
+        Thread().apply {
+            Thread.sleep(delay)
+            runOnUiThread {
+                when (end.winner) {
+                    PlayerNum.SECOND -> {
+                        gameEndReason.text = getEndGameString(end.reason, true)
+                        gameWinner.text = getString(R.string.game_end_positive)
+                    }
+                    PlayerNum.FIRST -> {
+                        gameEndReason.text = getEndGameString(end.reason, false)
+                        gameWinner.text = getString(R.string.game_end_negative)
+                    }
+                    PlayerNum.NOPLAYER, null -> return@runOnUiThread
+                }
+
+                TransitionManager.beginDelayedTransition(gameRoot)
+                gameWinner.visibility = View.VISIBLE
+                gameEndReason.visibility = View.VISIBLE
+                gameEndBackground.visibility = View.VISIBLE
+            }
+        }.start()
     }
 
     private fun executeAiMove() {
@@ -92,6 +134,11 @@ class GameActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (gameEnded) {
+            super.onBackPressed()
+            return
+        }
+
         val builder = AlertDialog.Builder(this)
         builder.apply {
             setTitle(getString(R.string.game_quit_dialog_title))

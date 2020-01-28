@@ -3,7 +3,19 @@
     <string name="game_player_turn_info">Your turn</string>
     <string name="game_start">Start</string>
     <string name="game_options">Options</string>
-    
+
+    <string name="game_end_draw_too_many_king_only">Too many king moves have been made without any other pieces and captures</string>
+    <string name="game_end_draw_no_movable_remaining">No pieces left with moves available</string>
+    <string name="game_end_draw_king_vs_king">King vs king results in a draw</string>
+
+    <string name="game_end_positive_no_pieces_remaining">Your opponent has no pieces remaining</string>
+    <string name="game_end_positive_no_movable_remaining">Your opponent has no movable pieces remaining</string>
+    <string name="game_end_negative_no_pieces_remaining">You have no pieces remaining</string>
+    <string name="game_end_negative_no_movable_remaining">You have no movable pieces remaining</string>
+
+    <string name="game_end_positive">You Won</string>
+    <string name="game_end_negative">You Lost</string>
+
     <string name="preference_file_key">main_preferences</string>
     <string name="preference_grid_size">grid_size</string>
     <string name="preference_player_rows">player_rows</string>
