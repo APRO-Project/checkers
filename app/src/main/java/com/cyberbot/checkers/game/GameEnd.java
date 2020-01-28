@@ -23,7 +23,7 @@ public class GameEnd {
         return reason;
     }
 
-    GameEnd(PlayerNum winner, GameEndReason reason) {
+    public GameEnd(PlayerNum winner, GameEndReason reason) {
         this.winner = winner;
         this.reason = reason;
     }
