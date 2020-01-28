@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 /**
  * Stores information about how game has ended.
@@ -23,7 +23,7 @@ public class GameEnd {
         return reason;
     }
 
-    public GameEnd(PlayerNum winner, GameEndReason reason) {
+    GameEnd(PlayerNum winner, GameEndReason reason) {
         this.winner = winner;
         this.reason = reason;
     }

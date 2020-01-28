@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.ai;
 
 class Tree {
     private Node root;

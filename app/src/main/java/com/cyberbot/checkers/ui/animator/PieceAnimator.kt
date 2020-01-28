@@ -2,7 +2,7 @@ package com.cyberbot.checkers.ui.animator
 
 import android.animation.Animator
 import android.animation.AnimatorSet
-import com.cyberbot.checkers.game.GridEntry
+import com.cyberbot.checkers.game.logic.GridEntry
 
 /**
  *

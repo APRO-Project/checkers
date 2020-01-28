@@ -14,7 +14,7 @@ import androidx.core.graphics.withTranslation
 import com.cyberbot.checkers.R
 import com.cyberbot.checkers.fx.Sound
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.*
+import com.cyberbot.checkers.game.logic.*
 import com.cyberbot.checkers.ui.animator.*
 import java.lang.Float.max
 import java.lang.Float.min

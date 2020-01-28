@@ -3,7 +3,7 @@ package com.cyberbot.checkers.ui.animator
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
-import com.cyberbot.checkers.game.GridEntry
+import com.cyberbot.checkers.game.logic.GridEntry
 
 class FullMoveAnimator(singleCellSize: Float, sequential: Boolean = false) :
     PieceAnimator(singleCellSize, sequential) {

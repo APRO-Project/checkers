@@ -1,4 +1,9 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.ai;
+
+import com.cyberbot.checkers.game.logic.Destination;
+import com.cyberbot.checkers.game.logic.Grid;
+import com.cyberbot.checkers.game.logic.GridEntry;
+import com.cyberbot.checkers.game.logic.PlayerNum;
 
 import java.util.ArrayList;
 import java.util.List;
