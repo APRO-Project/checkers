@@ -15,6 +15,7 @@
 
     <string name="game_end_positive">You Won</string>
     <string name="game_end_negative">You Lost</string>
+    <string name="game_end_neutral">Draw</string>
 
     <string name="preference_file_key">main_preferences</string>
     <string name="preference_grid_size">grid_size</string>

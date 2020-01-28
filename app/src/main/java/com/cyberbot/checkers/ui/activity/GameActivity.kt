@@ -103,7 +103,11 @@ class GameActivity : AppCompatActivity() {
                         gameEndReason.text = getEndGameString(end.reason, false)
                         gameWinner.text = getString(R.string.game_end_negative)
                     }
-                    PlayerNum.NOPLAYER, null -> return@runOnUiThread
+                    PlayerNum.NOPLAYER -> {
+                        gameEndReason.text = getEndGameString(end.reason, false)
+                        gameWinner.text = getString(R.string.game_end_neutral)
+                    }
+                    null -> throw RuntimeException("GameEnd winner is null")
                 }
 
                 TransitionManager.beginDelayedTransition(gameRoot)
