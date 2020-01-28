@@ -3,7 +3,20 @@
     <string name="game_player_turn_info">Your turn</string>
     <string name="game_start">Start</string>
     <string name="game_options">Options</string>
-    
+
+    <string name="game_end_draw_too_many_king_only">Too many king moves have been made without any other pieces and captures</string>
+    <string name="game_end_draw_no_movable_remaining">No pieces left with moves available</string>
+    <string name="game_end_draw_king_vs_king">King vs king results in a draw</string>
+
+    <string name="game_end_positive_no_pieces_remaining">Your opponent has no pieces remaining</string>
+    <string name="game_end_positive_no_movable_remaining">Your opponent has no movable pieces remaining</string>
+    <string name="game_end_negative_no_pieces_remaining">You have no pieces remaining</string>
+    <string name="game_end_negative_no_movable_remaining">You have no movable pieces remaining</string>
+
+    <string name="game_end_positive">You Won</string>
+    <string name="game_end_negative">You Lost</string>
+    <string name="game_end_neutral">Draw</string>
+
     <string name="preference_file_key">main_preferences</string>
     <string name="preference_grid_size">grid_size</string>
     <string name="preference_player_rows">player_rows</string>
@@ -12,6 +25,8 @@
     <string name="preference_can_move_backwards">can_move_backwards</string>
     <string name="preference_can_capture_backwards">can_capture_backwards</string>
     <string name="preference_flying_king">flying_king</string>
+    <string name="preference_ai_depth">ai_depth</string>
+    <string name="preference_capture_hints">capture_hints</string>
 
     <string name="settings_board_preview">Preview</string>
     <string name="settings_grid_size">Grid size</string>
@@ -25,4 +40,17 @@
     <string name="game_ai_thinking">Thinking</string>
     <string name="settings_mandatory_captures">Mandatory captures</string>
     <string name="settings_auto_capture">Auto capture</string>
+    <string name="settings_difficulty_easy">Easy</string>
+    <string name="settings_difficulty_medium">Medium</string>
+    <string name="settings_difficulty_hard">Hard</string>
+    <string name="settings_difficulty">Difficulty</string>
+    <string name="app_subtitle">by CyberBot Team</string>
+    <string name="settings_capture_hints">Capture hints</string>
+    <string name="game_quit_dialog_message">Are you sure you want to end the game? Your progress will not be saved</string>
+    <string name="game_quit_dialog_title">Quit</string>
+    <string name="game_quit_dialog_positive">Yes</string>
+    <string name="game_quit_dialog_negative">No</string>
+    <string name="settings_performance_dialog_positive">OK</string>
+    <string name="settings_performance_dialog_title">Performance issues</string>
+    <string name="settings_performance_dialog_message">This difficulty might be slow on lower-end devices and boards bigger then 8x8.</string>
 </resources>

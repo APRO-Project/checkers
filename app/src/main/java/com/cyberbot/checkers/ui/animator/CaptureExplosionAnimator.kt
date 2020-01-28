@@ -1,17 +1,12 @@
 package com.cyberbot.checkers.ui.animator
 
 import android.animation.AnimatorSet
-import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
-import android.graphics.Interpolator
 import android.view.animation.PathInterpolator
-import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import com.cyberbot.checkers.fx.SoundType
-import com.cyberbot.checkers.game.GridEntry
-import java.lang.RuntimeException
+import com.cyberbot.checkers.game.logic.GridEntry
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 import kotlin.random.Random
 
 class CaptureExplosionAnimator(singleCellSize: Float) :
@@ -50,9 +45,8 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
         topScale: Float = 3F,
         lowScale: Float = 0.6F
     ) {
-        addPieceInternal(entry, srcX, srcY, srcScale)
-        val values =
-            animatedPieces[entry] ?: throw RuntimeException("Piece not added to animatedPieces set")
+
+        val values = addPieceInternal(entry, srcX, srcY, srcScale)
 
         val dstX = (dstEntry.x + 0.5F) * singleCellSize
         val dstY = (dstEntry.y + 0.5F) * singleCellSize
@@ -140,7 +134,7 @@ class CaptureExplosionAnimator(singleCellSize: Float) :
             duration = 250
         }
 
-        animators.add(
+        addAnimator(
             AnimatorSet().apply {
                 playSequentially(
                     riseAnimator,

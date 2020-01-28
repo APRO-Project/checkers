@@ -1,9 +1,4 @@
-package com.cyberbot.checkers.game;
-
-import android.os.DropBoxManager;
-
-import com.cyberbot.checkers.game.GridEntry;
-import com.cyberbot.checkers.game.PlayerNum;
+package com.cyberbot.checkers.game.logic;
 
 import java.util.stream.Stream;
 

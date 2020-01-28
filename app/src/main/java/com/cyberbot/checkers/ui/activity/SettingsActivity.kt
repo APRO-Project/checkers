@@ -1,10 +1,11 @@
 package com.cyberbot.checkers.ui.activity
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.cyberbot.checkers.R
-import com.cyberbot.checkers.game.Grid
-import com.cyberbot.checkers.game.PlayerNum
+import com.cyberbot.checkers.game.logic.Grid
+import com.cyberbot.checkers.game.logic.PlayerNum
 import com.cyberbot.checkers.preferences.Preferences
 import kotlinx.android.synthetic.main.activity_settings.*
 
@@ -17,14 +18,20 @@ class SettingsActivity : AppCompatActivity() {
 
         val prefs = Preferences.fromContext(this)
         settingsGridPreview.playerTurn = PlayerNum.NOPLAYER
-        settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
+        settingsGridPreview.gridData = Grid(
+            prefs.gridSize,
+            prefs.playerRows
+        )
 
         settingsMandatoryCapturesSwitch.isChecked = prefs.mandatoryCapture
         settingsAutoCaptureSwitch.isChecked = prefs.autoCapture
-        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
         settingsCaptureBackwardSwitch.isChecked = prefs.canCaptureBackwards
         settingsMoveBackwardSwitch.isChecked = prefs.canMoveBackwards
         settingsFlyingKingSwitch.isChecked = prefs.flyingKing
+        settingsCaptureHintsSwitch.isChecked = prefs.captureHints
+
+        settingsMoveBackwardSwitch.isEnabled = prefs.flyingKing
+        settingsAutoCaptureSwitch.isEnabled = prefs.mandatoryCapture
 
         settingsMandatoryCapturesSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.mandatoryCapture = isChecked
@@ -47,8 +54,14 @@ class SettingsActivity : AppCompatActivity() {
             prefs.save(this)
         }
 
+        settingsCaptureHintsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.captureHints = isChecked
+            prefs.save(this)
+        }
+
         settingsFlyingKingSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.flyingKing= isChecked
+            prefs.flyingKing = isChecked
+            settingsMoveBackwardSwitch.isEnabled = isChecked
             prefs.save(this)
         }
 
@@ -58,6 +71,15 @@ class SettingsActivity : AppCompatActivity() {
                 10 -> R.id.chip10
                 12 -> R.id.chip12
                 else -> R.id.chip10
+            }
+        )
+
+        settingsDifficultyChipGroup.check(
+            when (prefs.aiDepth) {
+                1 -> R.id.chipEasy
+                2 -> R.id.chipMedium
+                4 -> R.id.chipHard
+                else -> R.id.chipMedium
             }
         )
 
@@ -79,7 +101,37 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             prefs.save(this)
-            settingsGridPreview.gridData = Grid(prefs.gridSize, prefs.playerRows)
+            settingsGridPreview.gridData = Grid(
+                prefs.gridSize,
+                prefs.playerRows
+            )
         }
+
+        settingsDifficultyChipGroup.setOnCheckedChangeListener { _, id ->
+            when (id) {
+                R.id.chipEasy -> prefs.aiDepth = 1
+                R.id.chipMedium -> prefs.aiDepth = 2
+                R.id.chipHard -> {
+                    showPoorPerformanceDialog()
+                    prefs.aiDepth = 4
+                }
+            }
+
+            prefs.save(this)
+        }
+    }
+
+    private fun showPoorPerformanceDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.apply {
+            setTitle(getString(R.string.settings_performance_dialog_title))
+            setMessage(getString(R.string.settings_performance_dialog_message))
+
+            setPositiveButton(getString(R.string.settings_performance_dialog_positive)) { dialog, _ ->
+                dialog.dismiss()
+            }
+        }
+
+        builder.create().show()
     }
 }

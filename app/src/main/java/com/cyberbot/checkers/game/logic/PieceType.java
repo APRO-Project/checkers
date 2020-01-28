@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 public enum PieceType {
     ORDINARY,

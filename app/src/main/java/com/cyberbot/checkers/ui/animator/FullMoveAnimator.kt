@@ -1,12 +1,9 @@
 package com.cyberbot.checkers.ui.animator
 
 import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
-import android.view.ViewPropertyAnimator
-import com.cyberbot.checkers.game.GridEntry
-import java.lang.RuntimeException
+import com.cyberbot.checkers.game.logic.GridEntry
 
 class FullMoveAnimator(singleCellSize: Float, sequential: Boolean = false) :
     PieceAnimator(singleCellSize, sequential) {
@@ -44,10 +41,10 @@ class FullMoveAnimator(singleCellSize: Float, sequential: Boolean = false) :
         moveSequential: Boolean = false,
         dstScale: Float = srcScale
     ) {
-        addPieceInternal(entry, srcX, srcY, srcScale)
-        val values = animatedPieces[entry]
-            ?: throw RuntimeException("Piece not added to animatedPieces set")
-        animators.add(AnimatorSet().apply {
+
+        val values = addPieceInternal(entry, srcX, srcY, srcScale)
+
+        addAnimator(AnimatorSet().apply {
             val moveAnimator = AnimatorSet().apply {
                 val animators = arrayListOf<Animator>(
                     ValueAnimator.ofFloat(srcX, dstX).apply {

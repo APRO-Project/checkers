@@ -1,4 +1,4 @@
-package com.cyberbot.checkers.game;
+package com.cyberbot.checkers.game.logic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -120,6 +120,10 @@ class GridTest {
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
 
+        // In order to not trigger InvalidArgumentException
+        srcEntry.setPlayer(PlayerNum.FIRST);
+        srcEntry.setPieceType(PieceType.ORDINARY);
+
         assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
 
@@ -130,6 +134,10 @@ class GridTest {
         Grid grid = new Grid(size, playerRows);
         GridEntry srcEntry = grid.getEntryByCoords(srcX, srcY);
         GridEntry dstEntry = grid.getEntryByCoords(dstX, dstY);
+
+        // In order to not trigger InvalidArgumentException
+        srcEntry.setPlayer(PlayerNum.FIRST);
+        srcEntry.setPieceType(PieceType.ORDINARY);
 
         assertFalse(grid.destinationAllowed(srcEntry, dstEntry));
     }
@@ -156,8 +164,8 @@ class GridTest {
                 Arguments.of(10, 0, 100),
                 Arguments.of(30, 0, 30),
                 Arguments.of(30, 30, 0),
-                Arguments.of(2, 30, 0),
-                Arguments.of(2, 2, 1)
+                Arguments.of(3, 30, 0),
+                Arguments.of(3, 3, 1)
         );
     }
 

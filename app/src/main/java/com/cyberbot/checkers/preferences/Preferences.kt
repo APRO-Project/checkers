@@ -10,7 +10,9 @@ class Preferences private constructor(
     var autoCapture: Boolean,
     var canMoveBackwards: Boolean,
     var canCaptureBackwards: Boolean,
-    var flyingKing: Boolean
+    var flyingKing: Boolean,
+    var aiDepth: Int,
+    var captureHints: Boolean
 ) {
     companion object {
         fun fromContext(context: Context): Preferences {
@@ -41,6 +43,10 @@ class Preferences private constructor(
 
                 val flyingKing =
                     sharedPref.getBoolean(getString(R.string.preference_flying_king), true)
+                val aiDepth = sharedPref.getInt(getString(R.string.preference_ai_depth), 2)
+                val captureHints =
+                    sharedPref.getBoolean(getString(R.string.preference_capture_hints), false)
+
 
                 return Preferences(
                     gridSize,
@@ -49,7 +55,9 @@ class Preferences private constructor(
                     autoCapture,
                     canMoveBackwards,
                     canCaptureBackwards,
-                    flyingKing
+                    flyingKing,
+                    aiDepth,
+                    captureHints
                 )
             }
         }
@@ -73,6 +81,8 @@ class Preferences private constructor(
                     canCaptureBackwards
                 )
                 it.putBoolean(getString(R.string.preference_flying_king), flyingKing)
+                it.putInt(getString(R.string.preference_ai_depth), aiDepth)
+                it.putBoolean(getString(R.string.preference_capture_hints), captureHints)
                 it.apply()
             }
         }
