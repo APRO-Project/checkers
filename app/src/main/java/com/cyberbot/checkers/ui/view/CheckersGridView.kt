@@ -264,7 +264,7 @@ class CheckersGridView(
     var hintLineWidth: Float = 0.1F
     var hintLineDestroyedWidth: Float = 0.075F
     var hintLineRadius: Float = 0.6F
-    var captureHints = true
+    var captureHints = false
     var greyedOutOpacity = 0.6F
 
     /**

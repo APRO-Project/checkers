@@ -45,7 +45,7 @@ class Preferences private constructor(
                     sharedPref.getBoolean(getString(R.string.preference_flying_king), true)
                 val aiDepth = sharedPref.getInt(getString(R.string.preference_ai_depth), 2)
                 val captureHints =
-                    sharedPref.getBoolean(getString(R.string.preference_capture_hints), true)
+                    sharedPref.getBoolean(getString(R.string.preference_capture_hints), false)
 
 
                 return Preferences(
