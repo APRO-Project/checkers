@@ -528,8 +528,8 @@ public class Grid implements Iterable<GridEntry>, Serializable {
         for (GridEntry adjEntry : getAdjacentEntries(lastLocation)) {
             // Check if can capture backwards or adjacent piece is ahead
             if (canCaptureBackwards
-                    || (lastLocation.getPlayer() == PlayerNum.FIRST && lastLocation.getY() < adjEntry.getY())
-                    || (lastLocation.getPlayer() == PlayerNum.SECOND && lastLocation.getY() > adjEntry.getY())) {
+                    || (player == PlayerNum.FIRST && lastLocation.getY() < adjEntry.getY())
+                    || (player == PlayerNum.SECOND && lastLocation.getY() > adjEntry.getY())) {
 
                 // Check if adjacent piece belongs to other player and wasn't captured yet
                 if (adjEntry.getPlayer() != PlayerNum.NOPLAYER
