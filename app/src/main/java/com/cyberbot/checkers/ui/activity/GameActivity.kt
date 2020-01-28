@@ -24,6 +24,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private lateinit var aiPlayer: AiPlayer
+    private var gameEnded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +90,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun handleEndGame(end: GameEnd, delay: Long = 1500) {
+        gameEnded = true
         Thread().apply {
             Thread.sleep(delay)
             runOnUiThread {
@@ -132,6 +134,11 @@ class GameActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (gameEnded) {
+            super.onBackPressed()
+            return
+        }
+
         val builder = AlertDialog.Builder(this)
         builder.apply {
             setTitle(getString(R.string.game_quit_dialog_title))
