@@ -8,6 +8,9 @@ import com.cyberbot.checkers.game.logic.PlayerNum;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Used to generate best moves based on board value. Utilizes alpha-beta-pruning Algorithm.
+ */
 public class AiPlayer {
     private final PlayerNum aiNum;
     private final PlayerNum adversaryNum;
@@ -28,6 +31,11 @@ public class AiPlayer {
         gameTree.setRoot(root);
     }
 
+    /**
+     * Updates aiMoveSource and aiMoveDestination based on given grid
+     *
+     * @param grid current state of grid for which move should be generated
+     */
     public void executeMove(Grid grid) {
         buildTree(grid);
         gameTree.getRoot().setScore(alphaBeta(gameTree.getRoot(), lvl, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, true));
@@ -36,6 +44,13 @@ public class AiPlayer {
         aiMoveDestination = bestChild.getDst();
     }
 
+
+    /**
+     * Utility function used to find the best node from children of given node
+     *
+     * @param parent parent node of search
+     * @return child with highest score
+     */
     private Node findBestChild(Node parent) {
         Node bestNode = new Node(null, null, Integer.MIN_VALUE);
         for (Node child : parent.getChildren()) {
@@ -46,6 +61,16 @@ public class AiPlayer {
         return bestNode;
     }
 
+    /**
+     * Algorithmic generation of the best move tree and assigning scores to nodes
+     *
+     * @param node root of the game tree
+     * @param depth number of moves predicted
+     * @param alpha algorithm based limiting factor
+     * @param beta algorithm based  limiting factor
+     * @param maximizingPlayer algorithm based bool
+     * @return value of tree branch, for use in the algorithm
+     */
     private int alphaBeta(Node node, int depth, int alpha, int beta, boolean maximizingPlayer) {
         if (depth == 0) {
                 int value = node.getValue(aiNum, adversaryNum);
